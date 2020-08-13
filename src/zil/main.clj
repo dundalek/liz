@@ -62,7 +62,7 @@
 
 (defn -main []
   (let [rdr (rt/indexing-push-back-reader
-              (io/reader "src/demo.cljc"))
+              (io/reader "examples/imgui-dice-roller/src/main.cljc"))
         eof (Object.)
         forms  (loop [forms []]
                      (let [form (reader/read {:eof eof} rdr)]

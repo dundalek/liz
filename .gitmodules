@@ -1,0 +1,3 @@
+[submodule "examples/imgui-dice-roller/cimgui/imgui"]
+	path = examples/imgui-dice-roller/cimgui/imgui
+	url = https://github.com/ocornut/imgui.git

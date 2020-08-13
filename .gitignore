@@ -1,3 +1,6 @@
 .idea
 .cpcache
 *.iml
+zig-cache
+target
+imgui.ini
