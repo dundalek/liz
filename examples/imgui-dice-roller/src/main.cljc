@@ -50,15 +50,14 @@
           :dice usize))
 
 (const dice ^"[_]Dice"
-  (array
-    (makeDice 2 0xC9D127)
-    (makeDice 4 0x24A146)
-    (makeDice 6 0x27BCD1)
-    (makeDice 8 0x9334E6)
-    (makeDice 10 0xE13294)
-    (makeDice 12 0xD93025)
-    (makeDice 20 0xF36D00)
-    (makeDice 100 0x878787)))
+  [(makeDice 2 0xC9D127)
+   (makeDice 4 0x24A146)
+   (makeDice 6 0x27BCD1)
+   (makeDice 8 0x9334E6)
+   (makeDice 10 0xE13294)
+   (makeDice 12 0xD93025)
+   (makeDice 20 0xF36D00)
+   (makeDice 100 0x878787)])
 
 (fn ^Dice makeDice [^u32 sides ^u32 color]
   (return {:sides sides
@@ -131,7 +130,7 @@
       (when (< rolls_len max_rolls)
         (aset rolls rolls_len
               {:roll (+ (rand.random.uintLessThan u32 d.sides) 1)
-               :dice 1})
+               :dice i})
         (+= rolls_len 1)))
     (c.igPopStyleColor 3)
     (when (< i (- dice.len 1))

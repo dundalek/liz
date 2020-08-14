@@ -91,7 +91,7 @@
 
                     (re-find #"Wrong number of args to var" (ex-message e))
                     (do (println e)
-                        (println "(var name value) not yet supported, use (vari name value) as a workaround"))
+                        (println "(var name value) conflicts with clojure, use (vari name value) as a workaround for now"))
 
                     :else (println "Unexpected error" e))))))))
       ;; TODO detect if zig is present

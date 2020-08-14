@@ -151,28 +151,35 @@
                 (emits ";\n")))))
 
 (defmethod -emit :vector
-  [{:keys [items]}]
-  (emits ".{ ")
-  (emits-interposed ", " items)
-  (emits " }"))
+  [{:keys [items meta]}]
+  (let [tag (-> meta :form :tag)]
+    (emits (or tag "."))
+    (emits "{ ")
+    (emits-interposed ", " items)
+    (emits " }")))
 
 (defmethod -emit :map
-  [{:keys [keys vals]}]
-  (if (empty? keys)
-    (emits "{}")
-    (do (emits ".{\n")
-        (doseq [[k v] (map vector keys vals)]
-          (assert (= (:type k) :keyword))
-          (emits ".")
-          (emits (name (:val k)))
-          (emits " = ")
-          (-emit v)
-          (emits ",\n"))
-        (emits "}"))))
+  [{:keys [keys vals meta]}]
+  (let [tag (-> meta :form :tag)]
+    (if (empty? keys)
+      (do
+        (when tag
+          (emits tag))
+        (emits "{}"))
+      (do (emits (or tag "."))
+          (emits "{\n")
+          (doseq [[k v] (map vector keys vals)]
+            (assert (= (:type k) :keyword))
+            (emits ".")
+            (emits (name (:val k)))
+            (emits " = ")
+            (-emit v)
+            (emits ",\n"))
+          (emits "}")))))
 
 (defmethod -emit :with-meta
-  [{:keys [expr]}]
-  (-emit expr))
+  [{:keys [expr meta]}]
+  (-emit (assoc expr :meta meta)))
 
 (defmethod -emit :invoke
   [{f :fn :keys [args top-level] :as expr}]
@@ -245,15 +252,6 @@
         (emits ";\n")))
 
     (and (= (:op f) :maybe-class)
-         (= (:class f) 'array))
-    (do
-      (when-some [tag (-> expr :meta :tag)]
-        (emits tag))
-      (emits "{ ")
-      (emits-interposed ", " args)
-      (emits " }"))
-
-    (and (= (:op f) :maybe-class)
          (binary-ops (:class f)))
     (emit-operator (:class f) args expr)
 
@@ -279,6 +277,11 @@
       (-emit (first args))
       (emits " ")
       (emit-block (rest args)))
+
+    (= (:form f) 'comptime)
+    (do
+      (emits "comptime ")
+      (emit-block args))
 
     (= (:form f) 'not=)
     (emit-operator '!= args expr)
@@ -309,6 +312,15 @@
           (-emit then)
           (emits ",\n"))
         (emits "}"))
+
+    (= (:form f) 'block)
+    (do (assert (= (-> (first args) :type) :keyword))
+        (emits (-> (first args) :val name))
+        (emits ": ")
+        (emit-block (rest args)))
+
+    (= (:form f) 'break)
+    (emit-statement expr)
 
     (#{'async 'suspend 'resume 'return 'defer 'errdefer 'continue 'break} (:form f))
     (emit-statement expr)

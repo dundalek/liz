@@ -101,7 +101,7 @@ fn render() !void {
             if ((rolls_len < max_rolls)) {
                 rolls[rolls_len] = .{
                     .roll = (rand.random.uintLessThan(u32, d.sides) + 1),
-                    .dice = 1,
+                    .dice = i,
                 };
                 rolls_len += 1;
             }
