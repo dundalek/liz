@@ -63,6 +63,13 @@
   (emits "| ")
   (emit-block (rest args)))
 
+(defn emit-statement [{f :fn :keys [args top-level]}]
+  (emits (:form f))
+  (emits " ")
+  (emits-interposed " " args)
+  (when top-level
+    (emits ";\n")))
+
 (defmethod -emit :maybe-class
   [expr]
   (emits (:class expr)))
@@ -290,6 +297,9 @@
 
     (= (:form f) 'zig*)
     (emits (:val (first args)))
+
+    (#{'async 'suspend 'resume} (:form f))
+    (emit-statement expr)
 
     :else
     (do
