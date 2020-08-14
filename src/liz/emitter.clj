@@ -65,7 +65,8 @@
 
 (defn emit-statement [{f :fn :keys [args top-level]}]
   (emits (:form f))
-  (emits " ")
+  (when (seq args)
+    (emits " "))
   (emits-interposed " " args)
   (when top-level
     (emits ";\n")))
@@ -309,7 +310,7 @@
           (emits ",\n"))
         (emits "}"))
 
-    (#{'async 'suspend 'resume 'return 'defer 'errdefer} (:form f))
+    (#{'async 'suspend 'resume 'return 'defer 'errdefer 'continue 'break} (:form f))
     (emit-statement expr)
 
     :else
@@ -351,15 +352,22 @@
       (-emit body))))
 
 (defmethod -emit :if
-  [{:keys [test then else]}]
-  (emits "if (")
-  (-emit test)
-  (emits ") ")
-  (-emit (assoc then :top-level true))
-  (when-not (and (= (:op else) :const)
-                 (= (:type else) :nil))
-    (emits " else ")
-    (-emit (assoc else :top-level true))))
+  [{:keys [test then else top-level]}]
+  (let [has-else (not (and (= (:op else) :const)
+                           (= (:type else) :nil)))]
+    (emits "if (")
+    ;; if the test is const then detect truthy value to support default value idiom for `cond`
+    (if (and (= (:op test) :const)
+             (:literal? test)
+             (:val test))
+      (emits "true")
+      (-emit test))
+    (emits ") ")
+    (-emit (assoc then
+             :top-level (and top-level (not has-else))))
+    (when has-else
+      (emits " else ")
+      (-emit (assoc else :top-level top-level)))))
 
 (defmethod -emit :do
   [{:keys [statements ret]}]
@@ -379,14 +387,25 @@
     (emits ";\n")))
 
 (defmethod -emit :try
-  [{:keys [body catches top-level]}]
-  (assert (empty? catches))
-  (assert (= (:op body) :do))
-  (assert (empty? (:statements body)))
-  (emits "try ")
-  (-emit (:ret body))
-  (when top-level
-    (emits ";\n")))
+  [{:keys [body catches top-level] :as node}]
+  (case (count catches)
+    0 (do (assert (= (:op body) :do))
+          (assert (empty? (:statements body)))
+          (emits "try ")
+          (-emit (:ret body))
+          (when top-level
+            (emits ";\n")))
+    1 (do (assert (= (:op body) :do))
+          (assert (empty? (:statements body)))
+          (-emit (:ret body))
+          (emits " catch |")
+          (emits (-> (first catches) :local :name))
+          (emits "| ")
+          (-emit (-> (first catches) :body))
+          (when top-level
+            (emits ";\n")))
+    (throw (ex-info (str "Try/Catch allows max 1 catch clause. but " (count catches) " given")
+                    {:node node}))))
 
 (defmethod -emit :default
   [expr]
