@@ -71,6 +71,15 @@
   (when top-level
     (emits ";\n")))
 
+(defn emit-aget [{:keys [args top-level]}]
+  (-emit (first args))
+  (doseq [index (rest args)]
+    (emits "[")
+    (-emit index)
+    (emits "]"))
+  (when top-level
+    (emits ";\n")))
+
 (defmethod -emit :maybe-class
   [expr]
   (emits (:class expr)))
@@ -96,7 +105,7 @@
   [{:keys [field target]}]
   (-emit target)
   (emits ".")
-  (let [is-numeric-field (try (Integer/parseInt (name (symbol "0")))
+  (let [is-numeric-field (try (Integer/parseInt (name field))
                            (catch Exception _))]
     (if is-numeric-field
       (do (emits "@\"")
@@ -117,14 +126,7 @@
   [{:keys [method target args top-level] :as node}]
   (cond
     (=  method 'aget)
-    (do (assert (= (count args) 2))
-        (let [[target index] args]
-           (-emit target)
-           (emits "[")
-           (-emit index)
-           (emits "]")
-           (when top-level
-             (emits ";\n"))))
+    (emit-aget node)
 
     (=  method 'aset)
     (do (assert (= (count args) 3))
@@ -195,7 +197,7 @@
     (do (assert (= (count args) 2))
         (let [{:keys [op form]} (first args)
               _ (assert (#{:var :maybe-class} op))
-              {:keys [tag threadlocal comptime]} (meta form)]
+              {:keys [tag threadlocal comptime align]} (meta form)]
           (when comptime
             (emits "comptime "))
           (when threadlocal
@@ -205,7 +207,11 @@
           (emits form)
           (when tag
             (emits ": ")
-            (emits tag)))
+            (emits tag))
+          (when align
+            (emits " align(")
+            (emits align)
+            (emits ")")))
         (emits " = ")
         (-emit (second args))
         (when top-level
@@ -294,6 +300,9 @@
 
     (= (:form f) 'not)
     (emit-operator '! args expr)
+
+    (= (:form f) 'aget)
+    (emit-aget expr)
 
     (= (:form f) 'zig*)
     (emits (:val (first args)))

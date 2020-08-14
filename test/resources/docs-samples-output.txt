@@ -67,3 +67,19 @@ All 4 tests passed.
 
 1/1 test "fully anonymous list literal"...OK
 All 1 tests passed.
+
+;; == test multidimensional.zig
+
+1/1 test "multidimensional arrays"...OK
+All 1 tests passed.
+
+;; == test volatile
+
+1/1 test "volatile"...OK
+All 1 tests passed.
+
+;; == test pointer casting
+
+1/2 test "pointer casting"...OK
+2/2 test "pointer child type"...OK
+All 2 tests passed.

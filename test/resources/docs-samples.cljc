@@ -237,3 +237,51 @@
   (assert (.-2 args))
   (assert (= (aget (.-3 args) 0) \h))
   (assert (= (aget (.-3 args) 1) \i)))
+
+;; == test multidimensional.zig
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(const mat4x4 ^"[4][4]f32" [^"[_]f32" [1.0, 0.0, 0.0, 0.0]
+                            ^"[_]f32" [0.0, 1.0, 0.0, 1.0]
+                            ^"[_]f32" [0.0, 0.0, 1.0, 0.0]
+                            ^"[_]f32" [0.0, 0.0, 0.0, 1.0]])
+
+(test "multidimensional arrays"
+  ;; Access the 2D array by indexing the outer array, and then the inner array.
+  (assert (= (aget mat4x4 1 1) 1.0))
+
+  ;; Here we iterate with for loops.
+  (for [[row, row_index] mat4x4]
+    (for [[cell, column_index] row]
+      (when (= row_index column_index)
+        (assert (= cell 1.0))))))
+
+;; == test volatile
+(const assert (.. (@import "std") -debug -assert))
+
+(test "volatile"
+  (const mmio_ptr (@intToPtr (zig* "*volatile u8") 0x12345678))
+  (assert (= (@TypeOf mmio_ptr) (zig* "*volatile u8"))))
+
+;; == test pointer casting
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "pointer casting"
+    (const ^{:align "@alignOf(u32)"} bytes ^"[_]u8" [0x12, 0x12, 0x12, 0x12])
+    (const u32_ptr (@ptrCast (zig* "*const u32") (& bytes)))
+    (assert (= u32_ptr.* 0x12121212))
+
+    ;; Even this example is contrived - there are better ways to do the above than
+    ;; pointer casting. For example, using a slice narrowing cast:
+    (const u32_value (-> (.bytesAsSlice std.mem u32 (slice bytes 0))
+                         (aget 0)))
+    (assert (= u32_value 0x12121212))
+
+    ;; And even another way, the most straightforward way to do it:
+    (assert (= (@bitCast u32 bytes) 0x12121212)))
+
+(test "pointer child type"
+    ;; pointer types have a `child` field which tells you the type they point to.
+    (assert (= (.-Child (zig* "(*u32)")) u32)))

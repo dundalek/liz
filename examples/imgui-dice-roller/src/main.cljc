@@ -5,23 +5,12 @@
 (const glfw_impl (@import "glfw_impl.zig"))
 (const gl3_impl (@import "gl3_impl.zig"))
 
-;; Q: use vector for tuple syntax or something else?
 (fn ^:export ^void errorCallback [^c_int err ^"[*c]const u8" description]
   (panic "Error: {}\n" [description]))
-
-;; tag can be string, so let's try it for now
-; (comment
-;   (meta (second (read-string "(defn ^\"bla x\" sum [a b] (+ a b))"))))
-
-;; It is invalid token in clojure, but perhaps we could use it it as alternative
-;; reverse keyword, e.g. name:
-; (fn ^:export ^void errorCallback(err: c_int, description: "[*c]const u8")
-;   (panic "Error {}\n" [description]))
 
 ;; TODO: rename vari to var when I start to tweak analyzer passes
 (vari ^std.rand.DefaultPrng rand undefined)
 
-;; Q: any extra annotations for errors or just use ! in symbol name?
 (fn ^!void initRandom []
   (vari ^"[8]u8" buf undefined)
   (try (std.crypto.randomBytes (slice buf 0)))
@@ -90,7 +79,6 @@
   (do
     (vari ^usize i 0)
     (while (< i rolls_len)
-      ;; what if there is function get in zig? use .get or -get
       (const roll (aget rolls i))
       (const d (aget dice roll.dice))
       (c.igPushIDInt (@intCast c_int i))
@@ -116,7 +104,7 @@
 
   (c.igText "Add dice")
   (c.igPushIDStr "Dice buttons")
-  ;; for does not have implicit do but would be nicer than doseq
+  ;; incompatibility with clojure: for does not have implicit do but is nicer than doseq
   (for [[d i] dice]
     (c.igPushIDInt (@intCast c_int i))
     (c.igPushStyleColorU32 c.ImGuiCol_Button d.color)

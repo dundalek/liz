@@ -51,16 +51,15 @@
     form
     (ana.jvm/macroexpand-1 form env)))
 
-(defn analyze+emit
-  ([form] (analyze+emit form (ana/empty-env)))
+(defn analyze
+  ([form] (analyze form (ana/empty-env)))
   ([form env]
-   (let [ast (binding [ana/macroexpand-1 macroexpand-1
-                       ana/create-var ana.jvm/create-var
-                       ana/parse ana.jvm/parse
-                       ana/var? var?]
-                    #_(ana.jvm/run-passes (ana/analyze form env))
-                  (ana/analyze form env))]
-     (emit ast))))
+   (binding [ana/macroexpand-1 macroexpand-1
+             ana/create-var ana.jvm/create-var
+             ana/parse ana.jvm/parse
+             ana/var? var?]
+     #_(ana.jvm/run-passes (ana/analyze form env))
+     (ana/analyze form env))))
 
 (defn read-all
   ([rdr] (read-all {:eof (Object.)} rdr))
@@ -78,7 +77,8 @@
     (doseq [form forms]
       ;; TODO One try/catch for analyzer and one for emitter
       (try
-        (analyze+emit form)
+        (-> (analyze form)
+            (emit))
         (catch Exception e
           (let [{:keys [node]} (ex-data e)]
             (cond
@@ -111,41 +111,13 @@
   (shutdown-agents))
 
 (comment
-  (-main "test.cljc"))
-
-;(defn -main [& filenames]
-;  (doseq [file-in filenames]
-;    (let [file-out (str/replace file-in #"\.[^.]+$" ".zig")]
-;      (let [rdr (rt/indexing-push-back-reader
-;                  (io/reader file-in))
-;            eof (Object.)
-;            forms  (loop [forms []]
-;                         (let [form (reader/read {:eof eof} rdr)]
-;                           (if-not (identical? form eof)
-;                             (do #_(println "Form:    " (type form) form)
-;                                 ; (println "Analyzed:" (ana/analyze env form))
-;                                 (recur (conj forms form)))
-;                             forms)))]
-;        (env/ensure (global-env)
-;          (doseq [form forms]
-;            ;(println "Form:" form)
-;            ;(println "Emit:")
-;            (analyze+emit form)))))))
-;        ;(println "\n")))))
-
-(comment
   (let [form (reader/read-string
                "(struct ^:var ^i32 x 1234)")
-        ast (binding [ana/macroexpand-1 macroexpand-1
-                      ana/create-var ana.jvm/create-var
-                      ana/parse ana.jvm/parse
-                      ana/var? var?]
-                   #_(ana.jvm/run-passes (ana/analyze form env))
-                   (env/ensure (global-env)
-                     (ana/analyze form (ana/empty-env))))]
+        ast (env/ensure (global-env)
+              (analyze form (ana/empty-env)))]
 
-       (binding [*print-meta* true]
-                 ;*print-level* 5]
-         (pprint ast))
+    (binding [*print-meta* true]
+              ;*print-level* 5]
+      (pprint ast))
 
-      (emit ast)))
+   (emit ast)))

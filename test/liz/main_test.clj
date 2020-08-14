@@ -26,23 +26,32 @@
               (assoc (parse-header header)
                      :content (str/join "\n" lines))))))
 
-(deftest docs-samples
-  (doseq [[{:keys [name action content]} result] (map vector (read-tests "test/resources/docs-samples.cljc")
-                                                             (read-tests "test/resources/docs-samples-output.txt"))]
-    (testing name
-      (with-temp-file
-        (fn [out-file]
-          (with-open [writer (io/writer out-file)]
-            (binding [*out* writer]
-              (-> (liz/read-all-string content)
-                  (liz/compile))))
-          (let [{:keys [exit out err]} (sh "zig" action out-file)]
-            (is (= name (:name result)))
-            (is (= exit 0))
-            (is (= (str/trim (str out "\n" err))
-                   (str/trim (:content result))))
+;(deftest compile-forms
+;  (is (= "pub extern \"c\" fn printf(format: [*:0]const u8, ...) c_int;"
+;         (with-out-str
+;           (-> (liz/read-all-string "(fn ^:pub ^c_int printf [^\"[*:0]const u8\" format ...])")
+;               (liz/compile))))))
 
-            (comment
-              (println (str ";; == " action " " name))
-              (println out)
-              (println err))))))))
+(deftest docs-samples
+  (let [samples (read-tests "test/resources/docs-samples.cljc")
+        results (read-tests "test/resources/docs-samples-output.txt")]
+    (is (= (count samples)
+           (count results)))
+    (doseq [[{:keys [name action content]} result] (map vector samples results)]
+      (testing name
+        (with-temp-file
+          (fn [out-file]
+            (with-open [writer (io/writer out-file)]
+              (binding [*out* writer]
+                (-> (liz/read-all-string content)
+                    (liz/compile))))
+            (let [{:keys [exit out err]} (sh "zig" action out-file)]
+              (is (= name (:name result)))
+              (is (= exit 0))
+              (is (= (str/trim (str out "\n" err))
+                     (str/trim (:content result))))
+
+              (comment
+                (println (str ";; == " action " " name))
+                (println out)
+                (println err)))))))))
