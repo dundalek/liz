@@ -43,7 +43,7 @@
 
 (def global-env ana.jvm/global-env)
 
-(def custom-forms (into binary-ops #{'while 'for 'assert}))
+(def custom-forms (into binary-ops #{'while 'for 'assert 'case}))
 
 (defn macroexpand-1 [form env]
   (if (and (list? form)

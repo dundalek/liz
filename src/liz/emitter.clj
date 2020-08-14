@@ -218,16 +218,6 @@
        (when top-level
          (emits ";\n")))
 
-    (and (= (:op f) :maybe-class)
-         (#{'return 'defer} (:class f)))
-    (do
-      (assert (= (count args) 1))
-      (emits (:class f))
-      (emits " ")
-      (-emit (first args))
-      (when top-level
-        (emits ";\n")))
-
     (and (= (:op f) :var)
          (= (:form f) 'struct))
     (do
@@ -298,7 +288,28 @@
     (= (:form f) 'zig*)
     (emits (:val (first args)))
 
-    (#{'async 'suspend 'resume} (:form f))
+    (= (:form f) 'bind)
+    (do (emits "|")
+        (-emit (first args))
+        (emits "| ")
+        (emit-block (rest args)))
+
+    (= (:form f) 'case)
+    (do (emits "switch (")
+        (-emit (first args))
+        (emits ") {\n")
+        (doseq [[test then] (->> args rest butlast (partition 2))]
+          (-emit test)
+          (emits " => ")
+          (-emit then)
+          (emits ",\n"))
+        (when-let [then (last args)]
+          (emits "else => ")
+          (-emit then)
+          (emits ",\n"))
+        (emits "}"))
+
+    (#{'async 'suspend 'resume 'return 'defer 'errdefer} (:form f))
     (emit-statement expr)
 
     :else
@@ -335,6 +346,7 @@
       (emits tag)
       ;; body is :op :do
       ;; maybe explicit return is not needed and we will get :context :ctx/retur for free
+      (emits " ")
       (assert (= (:op body) :do))
       (-emit body))))
 
