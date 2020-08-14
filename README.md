@@ -1,2 +1,2 @@
 
-# Zil: Zig "Lisp"
+# Liz: "Lispy" Zig

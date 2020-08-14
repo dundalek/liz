@@ -1,4 +1,4 @@
-(ns zil.lang)
+(ns liz.lang)
 
 ;; set! .. =
 

@@ -1,6 +1,6 @@
-(ns zil.emitter
+(ns liz.emitter
   (:require [clojure.pprint :refer [pprint]]
-            [zil.lang :refer [binary-ops]]))
+            [liz.lang :refer [binary-ops]]))
 
 (defn unwrap-meta [expr]
   (cond-> expr
@@ -38,13 +38,17 @@
     (emits ";\n")
     (emits ")")))
 
+(defn emit-block [forms]
+  (emits "{\n")
+  (doseq [form forms]
+    (-emit (assoc form :top-level true)))
+  (emits "}"))
+
 (defn emit-while [args]
   (emits "while (")
   (-emit (first args))
-  (emits ") {\n")
-  (doseq [form (rest args)]
-    (-emit (assoc form :top-level true)))
-  (emits "}"))
+  (emits ") ")
+  (emit-block (rest args)))
 
 (defn emit-for [args]
   ;(pprint args)
@@ -56,10 +60,8 @@
     (if (= (:op binding) :vector)
       (emits-interposed ", " (:items binding))
       (-emit binding)))
-  (emits "| {\n")
-  (doseq [form (rest args)]
-    (-emit (assoc form :top-level true)))
-  (emits "}"))
+  (emits "| ")
+  (emit-block (rest args)))
 
 (defmethod -emit :maybe-class
   [expr]
@@ -71,8 +73,11 @@
 
 (defmethod -emit :const
   [{:keys [type val]}]
-  (if (= type :nil)
-    (emits "null")
+  (case type
+    :nil (emits "null")
+    :char (do (emits "'")
+              (emits val)
+              (emits "'"))
     (emits (pr-str val))))
 
 (defmethod -emit :local
@@ -85,6 +90,58 @@
   (emits ".")
   (emits field))
 
+(defmethod -emit :host-interop
+  [{:keys [m-or-f target top-level]}]
+  (-emit target)
+  (emits ".")
+  (emits m-or-f)
+  (emits "()")
+  (when top-level
+    (emits ";\n")))
+
+(defmethod -emit :host-call
+  [{:keys [method target args top-level] :as node}]
+  (cond
+    (=  method 'aget)
+    (do (assert (= (count args) 2))
+        (let [[target index] args]
+           (-emit target)
+           (emits "[")
+           (-emit index)
+           (emits "]")
+           (when top-level
+             (emits ";\n"))))
+
+    (=  method 'aset)
+    (do (assert (= (count args) 3))
+        (let [[target index val] args]
+           (-emit target)
+           (emits "[")
+           (-emit index)
+           (emits "] = ")
+           (-emit val)
+           (when top-level
+             (emits ";\n"))))
+
+    (=  method 'equiv)
+    (emit-operator '== args node)
+
+    ;; for now no-op and rely on zig casting, maybe modify in future
+    (= method 'intCast)
+    (do (when (not= (count args) 1)
+          (throw (ex-info (str "intCast has " (count args) " args in :op :host-call, expeced 1")
+                          {:node node})))
+        (-emit (first args)))
+
+    :else (do (-emit target)
+              (emits ".")
+              (emits method)
+              (emits "(")
+              (emits-interposed ", " args)
+              (emits ")")
+              (when top-level
+                (emits ";\n")))))
+
 (defmethod -emit :vector
   [{:keys [items]}]
   (emits ".{ ")
@@ -93,15 +150,17 @@
 
 (defmethod -emit :map
   [{:keys [keys vals]}]
-  (emits ".{\n")
-  (doseq [[k v] (map vector keys vals)]
-    (assert (= (:type k) :keyword))
-    (emits ".")
-    (emits (name (:val k)))
-    (emits " = ")
-    (-emit v)
-    (emits ",\n"))
-  (emits "}"))
+  (if (empty? keys)
+    (emits "{}")
+    (do (emits ".{\n")
+        (doseq [[k v] (map vector keys vals)]
+          (assert (= (:type k) :keyword))
+          (emits ".")
+          (emits (name (:val k)))
+          (emits " = ")
+          (-emit v)
+          (emits ",\n"))
+        (emits "}"))))
 
 (defmethod -emit :with-meta
   [{:keys [expr]}]
@@ -113,13 +172,15 @@
   (cond
     (#{'const 'vari} (:class f))
     (do (assert (= (count args) 2))
-        (emits (if (= (:class f) 'vari)
-                 "var"
-                 (:class f)))
-        (emits " ")
         (let [{:keys [op form]} (first args)
               _ (assert (#{:var :maybe-class} op))
-              tag (:tag (meta form))]
+              {:keys [tag threadlocal comptime]} (meta form)]
+          (when comptime
+            (emits "comptime "))
+          (when threadlocal
+            (emits "threadlocal "))
+          (emits (if (= (:class f) 'vari) "var" (:class f)))
+          (emits " ")
           (emits form)
           (when tag
             (emits ": ")
@@ -166,11 +227,21 @@
       (assert (even? (count args)))
       (emits "struct {\n")
       (doseq [[k v] (partition 2 args)]
-        (assert (= (:type k) :keyword))
-        (emits (name (:val k)))
-        (emits ": ")
-        (-emit v)
-        (emits ",\n"))
+        (if (= (:type k) :keyword)
+          (do (emits (name (:val k)))
+              (emits ": ")
+              (-emit v)
+              (emits ",\n"))
+          (let [{:keys [var tag]} (meta (:form k))]
+            (when var (emits "var "))
+            (emits (:form k))
+            (emits ": ")
+            (if tag
+              (do (emits tag)
+                  (emits " = ")
+                  (-emit v))
+              (-emit v))
+            (emits ";\n"))))
       (emits "}")
       (when top-level
         (emits ";\n")))
@@ -204,6 +275,22 @@
              (= (:class f) 'for)))
     (emit-for args)
 
+    (= (:form f) 'test)
+    (do
+      (emits "test ")
+      (-emit (first args))
+      (emits " ")
+      (emit-block (rest args)))
+
+    (= (:form f) 'not=)
+    (emit-operator '!= args expr)
+
+    (= (:form f) 'not)
+    (emit-operator '! args expr)
+
+    (= (:form f) 'zig*)
+    (emits (:val (first args)))
+
     :else
     (do
       (-emit f)
@@ -212,43 +299,6 @@
       (emits ")")
       (when top-level
         (emits ";\n")))))
-
-(defmethod -emit :host-call
-  [{:keys [method args top-level] :as node}]
-  (cond
-    (=  method 'aget)
-    (do (assert (= (count args) 2))
-        (let [[target index] args]
-           (-emit target)
-           (emits "[")
-           (-emit index)
-           (emits "]")
-           (when top-level
-             (emits ";\n"))))
-
-    (=  method 'aset)
-    (do (assert (= (count args) 3))
-        (let [[target index val] args]
-           (-emit target)
-           (emits "[")
-           (-emit index)
-           (emits "] = ")
-           (-emit val)
-           (when top-level
-             (emits ";\n"))))
-
-    (=  method 'equiv)
-    (emit-operator '== args node)
-
-    ;; for now no-op and rely on zig casting, maybe modify in future
-    (= method 'intCast)
-    (do (when (not= (count args) 1)
-          (throw (ex-info (str "intCast has " (count args) " args in :op :host-call, expeced 1")
-                          {:node node})))
-        (-emit (first args)))
-
-    :else (throw (ex-info (str "Unsupported :host-call :op " method)
-                          {:node node}))))
 
 (defmethod -emit :fn
   [{:keys [local methods top-level]}]
@@ -276,12 +326,7 @@
       ;; body is :op :do
       ;; maybe explicit return is not needed and we will get :context :ctx/retur for free
       (assert (= (:op body) :do))
-      (let [{:keys [statements ret]} body]
-        (emits " {\n")
-        (doseq [statement statements]
-          (-emit (assoc statement :top-level true)))
-        (-emit (assoc ret :top-level true))
-        (emits "}\n")))))
+      (-emit body))))
 
 (defmethod -emit :if
   [{:keys [test then else]}]
@@ -321,10 +366,7 @@
   (when top-level
     (emits ";\n")))
 
-
 (defmethod -emit :default
   [expr]
-  (binding [*print-meta* false]
-    (pprint expr))
-  (println "Unhandled op for -emit: " (:op expr) "children:" (:children expr))
-  (assert false))
+  (throw (ex-info ("Unhandled op for -emit: " (:op expr) "children:" (:children expr))
+           {:node expr})))
