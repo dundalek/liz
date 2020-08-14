@@ -223,3 +223,17 @@
   (assert (= (.-x (aget more_points 4)) 3))
   (assert (= (.-y (aget more_points 4)) 6))
   (assert (= more_points.len 10)));
+
+;; == test infer_list_literal.zig
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "fully anonymous list literal"
+  (dump [(@as u32 1234), (@as f64 12.34), true, "hi"]))
+
+(fn ^void dump [^var args]
+  (assert (= (.-0 args) 1234))
+  (assert (= (.-1 args) 12.34))
+  (assert (.-2 args))
+  (assert (= (aget (.-3 args) 0) \h))
+  (assert (= (aget (.-3 args) 1) \i)))

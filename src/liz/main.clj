@@ -1,5 +1,5 @@
 (ns liz.main
-  (:refer-clojure :exclude [macroexpand-1])
+  (:refer-clojure :exclude [macroexpand-1 compile])
   (:require [clojure.tools.reader :as reader]
             [clojure.tools.reader.reader-types :as rt]
             [clojure.tools.analyzer :as ana]
@@ -69,31 +69,40 @@
      (when-not (identical? form eof)
        (cons form (lazy-seq (read-all opts rdr)))))))
 
+(defn read-all-string [s]
+  (read-all (rt/indexing-push-back-reader
+              (rt/string-reader s))))
+
+(defn compile [forms]
+  (env/ensure (global-env)
+    (doseq [form forms]
+      ;; TODO One try/catch for analyzer and one for emitter
+      (try
+        (analyze+emit form)
+        (catch Exception e
+          (let [{:keys [node]} (ex-data e)]
+            (cond
+              node
+              (do (binding [*print-meta* true]
+                    (pprint node))
+                  (println (ex-message e)))
+
+              (re-find #"Wrong number of args to var" (ex-message e))
+              (binding [*out* *err*]
+                (println e)
+                (println "(var name value) conflicts with clojure, use (vari name value) as a workaround for now"))
+
+              :else (binding [*out* *err*]
+                      (println "Unexpected error" e)))))))))
+
 (defn -main [& filenames]
   (doseq [file-in filenames]
     (let [file-out (str/replace file-in #"\.[^.]+$" ".zig")]
       (with-open [rdr (rt/indexing-push-back-reader
                         (io/reader file-in))
                   writer (io/writer file-out)]
-        (env/ensure (global-env)
-          (doseq [form (read-all rdr)]
-            ;; TODO One try/catch for analyzer and one for emitter
-            (try
-              (binding [*out* writer]
-                (analyze+emit form))
-              (catch Exception e
-                (let [{:keys [node]} (ex-data e)]
-                  (cond
-                    node
-                    (do (binding [*print-meta* true]
-                          (pprint node))
-                        (println (ex-message e)))
-
-                    (re-find #"Wrong number of args to var" (ex-message e))
-                    (do (println e)
-                        (println "(var name value) conflicts with clojure, use (vari name value) as a workaround for now"))
-
-                    :else (println "Unexpected error" e))))))))
+        (binding [*out* writer]
+          (compile (read-all rdr))))
       ;; TODO detect if zig is present
       (let [{:keys [exit err]} (sh "zig" "fmt" file-out)]
         (when-not (zero? exit)

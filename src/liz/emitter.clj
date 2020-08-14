@@ -96,7 +96,13 @@
   [{:keys [field target]}]
   (-emit target)
   (emits ".")
-  (emits field))
+  (let [is-numeric-field (try (Integer/parseInt (name (symbol "0")))
+                           (catch Exception _))]
+    (if is-numeric-field
+      (do (emits "@\"")
+          (emits field)
+          (emits "\""))
+      (emits field))))
 
 (defmethod -emit :host-interop
   [{:keys [m-or-f target top-level]}]

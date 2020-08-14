@@ -1,0 +1,69 @@
+;; == run hello
+Hello, world!
+
+
+;; == run hello_again
+
+Hello, world!
+
+;; == test comments
+
+1/1 test "comments"...OK
+All 1 tests passed.
+
+;; == run values
+
+1 + 1 = 2
+7.0 / 3.0 = 2.33333325e+00
+false
+true
+false
+
+optional 1
+type: ?[]const u8
+value: null
+
+optional 2
+type: ?[]const u8
+value: hi
+
+error union 1
+type: anyerror!i32
+value: error.ArgNotFound
+
+error union 2
+type: anyerror!i32
+value: 1234
+
+;; == test string literals
+
+1/1 test "string literals"...OK
+All 1 tests passed.
+
+;; == test namespaced_global.zig
+
+1/1 test "namespaced global variable"...OK
+All 1 tests passed.
+
+;; == test Thread Local Variables
+
+1/1 test "thread local storage"...OK
+All 1 tests passed.
+
+;; == test comptime variables
+
+1/1 test "comptime vars"...OK
+All 1 tests passed.
+
+;; == test Arrays
+
+1/4 test "iterate over an array"...OK
+2/4 test "modify an array"...OK
+3/4 test "compile-time array initalization"...OK
+4/4 test "array initialization with function calls"...OK
+All 4 tests passed.
+
+;; == test infer_list_literal.zig
+
+1/1 test "fully anonymous list literal"...OK
+All 1 tests passed.
