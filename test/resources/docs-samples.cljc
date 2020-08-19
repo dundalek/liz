@@ -426,3 +426,144 @@
 
 (fn ^type List [^:comptime ^type T]
   (return (struct ^T x)))
+
+;; == test enums.zig
+(const assert (.. (@import "std") -debug -assert))
+(const mem (.. (@import "std") -mem))
+
+;; Declare an enum.
+(const Type
+  (enum Ok
+        NotOk))
+
+;; Declare a specific instance of the enum variant.
+(const c Type.Ok)
+
+;; If you want access to the ordinal value of an enum, you
+;; can specify the tag type.
+(const Value
+  ^u2 (enum Zero
+            One
+            Two))
+
+;; Now you can cast between u2 and Value.
+;; The ordinal value starts from 0, counting up for each member.
+(test "enum ordinal value"
+    (assert (= (@enumToInt Value.Zero) 0))
+    (assert (= (@enumToInt Value.One) 1))
+    (assert (= (@enumToInt Value.Two) 2)))
+
+;; You can override the ordinal value for an enum.
+(const Value2 ^u32
+  (enum (set! Hundred 100)
+        (set! Thousand 1000)
+        (set! Million 1000000)))
+
+(test "set enum ordinal value"
+  (assert (= (@enumToInt Value2.Hundred) 100))
+  (assert (= (@enumToInt Value2.Thousand) 1000))
+  (assert (= (@enumToInt Value2.Million) 1000000)))
+
+;; Enums can have methods, the same as structs and unions.
+;; Enum methods are not special, they are only namespaced
+;; functions that you can call with dot syntax.
+(const Suit
+  (enum Clubs
+        Spades
+        Diamonds
+        Hearts
+
+        (fn ^:pub ^bool isClubs [^Suit self]
+          (return (= self Suit.Clubs)))))
+
+(test "enum method"
+  (const p Suit.Spades)
+  (assert (not (.isClubs p))))
+
+;; An enum variant of different types can be switched upon.
+(const Foo
+  (enum String
+        Number
+        None))
+
+(test "enum variant switch"
+  (const p Foo.Number)
+  (const what_is_it
+    (case p
+      Foo.String "this is a string"
+      Foo.Number "this is a number"
+      Foo.None "this is a none"))
+
+  (assert (.eql mem u8 what_is_it "this is a number")))
+
+;; @TagType can be used to access the integer tag type of an enum.
+(const Small
+  (enum One
+        Two
+        Three
+        Four))
+
+(test "@TagType"
+  (assert (= (@TagType Small) u2)))
+
+;; @typeInfo tells us the field count and the fields names:
+(test "@typeInfo"
+  (assert (= (.-Enum.fields.len (@typeInfo Small)) 4))
+  (assert (.eql mem u8
+                (-> (@typeInfo Small) .-Enum .-fields (aget 1) .-name)
+                "Two")))
+
+;; @tagName gives a []const u8 representation of an enum value:
+(test "@tagName"
+  (assert (.eql mem u8 (@tagName Small.Three) "Three")))
+
+;; == test Enum Literals
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(const Color
+  (enum Auto
+        Off
+        On))
+
+(test "enum literals"
+  (const ^Color color1 .Auto)
+  (const color2 Color.Auto)
+  (assert (= color1 color2)))
+
+(test "switch using enum literals"
+  (const color Color.On)
+  (const result
+    (case color
+      .Auto false
+      .On true
+      .Off false))
+
+  (assert result))
+
+;; == test Non-exhaustive enum
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(const Number
+  ^u8 (enum
+        One
+        Two
+        Three
+        _))
+
+(test "switch on non-exhaustive enum"
+  (const number Number.One)
+  (const result
+    (case number
+      .One true
+      [.Two .Three] false
+      _ false))
+
+  (assert result)
+  (const is_one
+    (case number
+      .One true
+      false))
+
+  (assert is_one))

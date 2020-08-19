@@ -102,3 +102,25 @@ All 1 tests passed.
 variable: Foo
 anonymous: struct:5:51
 function: List(i32)
+
+;; == test enums.zig
+
+1/7 test "enum ordinal value"...OK
+2/7 test "set enum ordinal value"...OK
+3/7 test "enum method"...OK
+4/7 test "enum variant switch"...OK
+5/7 test "@TagType"...OK
+6/7 test "@typeInfo"...OK
+7/7 test "@tagName"...OK
+All 7 tests passed.
+
+;; == test Enum Literals
+
+1/2 test "enum literals"...OK
+2/2 test "switch using enum literals"...OK
+All 2 tests passed.
+
+;; == test Non-exhaustive enum
+
+1/1 test "switch on non-exhaustive enum"...OK
+All 1 tests passed.

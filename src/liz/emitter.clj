@@ -264,6 +264,31 @@
       (when top-level
         (emits ";\n")))
 
+    (= (:form f) 'enum)
+    (do
+      (when (-> f :form meta :extern)
+        (emits "extern "))
+      (when (-> f :form meta :packed)
+        (emits "packed "))
+      (emits "enum")
+      (when-some [tag (-> expr :meta :tag)]
+        (emits "(")
+        (emits tag)
+        (emits ")"))
+      (emits " {\n")
+      (doseq [{:keys [form op] :as arg} args]
+        (if (#{:maybe-class :var} op)
+          (do (emits form)
+              (emits ",\n"))
+          (if (= op :set!)
+            (do
+              (-emit arg)
+              (emits ",\n"))
+            (-emit (assoc arg :top-level true)))))
+      (emits "}")
+      (when top-level
+        (emits ";\n")))
+
     (and (= (:op f) :maybe-class)
          (binary-ops (:class f)))
     (emit-operator (:class f) args expr)
@@ -319,7 +344,9 @@
         (-emit (first args))
         (emits ") {\n")
         (doseq [[test then] (->> args rest butlast (partition 2))]
-          (-emit test)
+          (if (= (:op (unwrap-meta test)) :vector)
+            (emits-interposed ",\n" (:items (unwrap-meta test)))
+            (-emit test))
           (emits " => ")
           (-emit then)
           (emits ",\n"))
