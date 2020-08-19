@@ -30,13 +30,13 @@
   (return (| r g b a)))
 
 (const Dice
-  (struct :sides u32
-          :color u32
-          :color_hovered u32))
+  (struct ^u32 sides
+          ^u32 color
+          ^u32 color_hovered))
 
 (const Roll
-  (struct :roll u32
-          :dice usize))
+  (struct ^u32 roll
+          ^usize dice))
 
 (const dice ^"[_]Dice"
   [(makeDice 2 0xC9D127)

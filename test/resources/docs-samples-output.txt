@@ -83,3 +83,22 @@ All 1 tests passed.
 1/2 test "pointer casting"...OK
 2/2 test "pointer child type"...OK
 All 2 tests passed.
+
+;; == test structs.zig
+
+1/4 test "dot product"...OK
+2/4 test "struct namespaced variable"...OK
+3/4 test "field parent pointer"...OK
+4/4 test "linked list"...OK
+All 4 tests passed.
+
+;; == test Default Field Values
+
+1/1 test "default struct initialization fields"...OK
+All 1 tests passed.
+
+;; == run struct_name.zig
+
+variable: Foo
+anonymous: struct:5:51
+function: List(i32)

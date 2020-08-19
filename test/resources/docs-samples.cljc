@@ -95,7 +95,7 @@
 
 (fn ^i32 foo []
   (const S (struct
-             ^:var ^i32 x 1234))
+             (vari ^i32 x 1234)))
   (+= S.x 1)
   (return S.x))
 
@@ -205,8 +205,8 @@
 
 (const Point
   (struct
-    :x i32
-    :y i32))
+    ^i32 x
+    ^i32 y))
 
 (test "compile-time array initalization"
   (assert (= (.-x (aget fancy_array 4)) 4))
@@ -285,3 +285,144 @@
 (test "pointer child type"
     ;; pointer types have a `child` field which tells you the type they point to.
     (assert (= (.-Child (zig* "(*u32)")) u32)))
+
+;; == test structs.zig
+;; Declare a struct.
+;; Zig gives no guarantees about the order of fields and the size of
+;; the struct but the fields are guaranteed to be ABI-aligned.
+(const Point (struct ^f32 x
+                     ^f32 y))
+
+;; Maybe we want to pass it to OpenGL so we want to be particular about
+;; how the bytes are arranged.
+(const Point2 (^:packed struct ^f32 x
+                               ^f32 y))
+
+;; Declare an instance of a struct.
+(const p ^Point {:x 0.12
+                 :y 0.34})
+
+;; Maybe we're not ready to fill out some of the fields.
+(vari p2 ^Point {:x 0.12
+                 :y undefined})
+
+;; Structs can have methods
+;; Struct methods are not special, they are only namespaced
+;; functions that you can call with dot syntax.
+(const Vec3
+  (struct
+    ^f32 x
+    ^f32 y
+    ^f32 z
+    (fn ^:pub ^Vec3 init [^f32 x ^f32 y ^f32 z]
+      (return ^Vec3 {:x x
+                     :y y
+                     :z z}))
+
+    (fn ^:pub ^f32 dot [^Vec3 self ^Vec3 other]
+      (return (+ (* self.x other.x)
+                 (* self.y other.y)
+                 (* self.z other.z))))))
+
+(const assert (.. (@import "std") -debug -assert))
+(test "dot product"
+    (const v1 (Vec3.init 1.0, 0.0, 0.0))
+    (const v2 (Vec3.init 0.0, 1.0, 0.0))
+    (assert (= (.dot v1 v2) 0.0))
+
+    ;; Other than being available to call with dot syntax, struct methods are
+    ;; not special. You can reference them as any other declaration inside
+    ;; the struct:
+    (assert (= (Vec3.dot v1 v2) 0.0)))
+
+;; Structs can have global declarations.
+;; Structs can have 0 fields.
+(const Empty
+  (struct
+    (const ^:pub PI 3.14)))
+
+(test "struct namespaced variable"
+    (assert (= Empty.PI 3.14))
+    (assert (= (@sizeOf Empty) 0))
+
+    ;; you can still instantiate an empty struct
+    (const does_nothing ^Empty {}))
+
+;; struct field order is determined by the compiler for optimal performance.
+;; however, you can still calculate a struct base pointer given a field pointer:
+(fn ^void setYBasedOnX [^*f32 x ^f32 y]
+  (const point (@fieldParentPtr Point "x" x))
+  (set! point.y y))
+
+(test "field parent pointer"
+  (vari point ^Point {:x 0.1234
+                      :y 0.5678})
+
+  (setYBasedOnX (& point.x) 0.9)
+  (assert (= point.y 0.9)))
+
+;; You can return a struct from a function. This is how we do generics
+;; in Zig:
+(fn ^type LinkedList [^:comptime ^type T]
+  (return (struct
+            (const ^:pub Node
+              (struct
+                ^?*Node prev
+                ^?*Node next
+                ^T data))
+
+            ^?*Node first
+            ^?*Node last
+            ^usize len)))
+
+(test "linked list"
+  ;; Functions called at compile-time are memoized. This means you can
+  ;; do this:
+  (assert (= (LinkedList i32) (LinkedList i32)))
+
+  (vari list ^"LinkedList(i32)"
+    {:first nil
+     :last nil
+     :len 0})
+
+  (assert (= list.len 0))
+
+  ;; Since types are first class values you can instantiate the type
+  ;; by assigning it to a variable:
+  (const ListOfInts (LinkedList i32))
+  (assert (= ListOfInts (LinkedList i32)))
+
+  (vari node ^ListOfInts.Node
+    {:prev nil
+     :next nil
+     :data 1234})
+
+  (vari list2 ^"LinkedList(i32)"
+    {:first (& node)
+     :last (& node)
+     :len 1})
+
+  (assert (= list2.first.?.data 1234)))
+
+;; == test Default Field Values
+(const Foo
+  (struct
+    ^i32 ^{:default 1234} a
+    ^i32 b))
+
+(test "default struct initialization fields"
+    (const x ^Foo {:b 5})
+    (when (not= (+ x.a x.b) 1239)
+      (@compileError "it's even comptime known!")))
+
+;; == run struct_name.zig
+(const std (@import "std"))
+
+(fn ^:pub ^void main []
+    (const Foo (struct))
+    (.warn std.debug "variable: {}\n", [(@typeName Foo)])
+    (.warn std.debug "anonymous: {}\n", [(@typeName (struct))])
+    (.warn std.debug "function: {}\n", [(@typeName (List i32))]))
+
+(fn ^type List [^:comptime ^type T]
+  (return (struct ^T x)))

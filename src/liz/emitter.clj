@@ -197,7 +197,9 @@
     (do (assert (= (count args) 2))
         (let [{:keys [op form]} (first args)
               _ (assert (#{:var :maybe-class} op))
-              {:keys [tag threadlocal comptime align]} (meta form)]
+              {:keys [tag threadlocal comptime pub align]} (meta form)]
+          (when pub
+            (emits "pub "))
           (when comptime
             (emits "comptime "))
           (when threadlocal
@@ -238,27 +240,26 @@
        (when top-level
          (emits ";\n")))
 
-    (and (= (:op f) :var)
-         (= (:form f) 'struct))
+    (= (:form f) 'struct)
     (do
-      (assert (even? (count args)))
+      (when (-> f :form meta :extern)
+        (emits "extern "))
+      (when (-> f :form meta :packed)
+        (emits "packed "))
       (emits "struct {\n")
-      (doseq [[k v] (partition 2 args)]
-        (if (= (:type k) :keyword)
-          (do (emits (name (:val k)))
-              (emits ": ")
-              (-emit v)
-              (emits ",\n"))
-          (let [{:keys [var tag]} (meta (:form k))]
-            (when var (emits "var "))
-            (emits (:form k))
+      (doseq [{:keys [form op] :as arg} args]
+        (if (#{:maybe-class :var} op)
+          (let [tag (-> form meta :tag)]
+            (assert tag)
+            (emits form)
             (emits ": ")
-            (if tag
-              (do (emits tag)
-                  (emits " = ")
-                  (-emit v))
-              (-emit v))
-            (emits ";\n"))))
+            (emits tag)
+            (when-some [default (-> form meta :default)]
+              (emits " = ")
+              ;; TODO this will likely be incorrect for more complicated values, fix with analyzer rewrite
+              (emits default))
+            (emits ",\n"))
+          (-emit (assoc arg :top-level true))))
       (emits "}")
       (when top-level
         (emits ";\n")))
@@ -367,6 +368,8 @@
         (fn [{:keys [op name]}]
           (assert (= op :binding))
           ;; params is :op :binding but lets do it manually for now because :binding could have different meaning elsewhere
+          (when (-> name meta :comptime)
+            (emits "comptime "))
           (emits name)
           (emits ": ")
           (emits (:tag (meta name)))))
@@ -376,7 +379,9 @@
       ;; maybe explicit return is not needed and we will get :context :ctx/retur for free
       (emits " ")
       (assert (= (:op body) :do))
-      (-emit body))))
+      (-emit body)
+      (when top-level
+        (emits "\n")))))
 
 (defmethod -emit :if
   [{:keys [test then else top-level]}]

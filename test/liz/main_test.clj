@@ -34,10 +34,11 @@
 
 (deftest docs-samples
   (let [samples (read-tests "test/resources/docs-samples.cljc")
-        results (read-tests "test/resources/docs-samples-output.txt")]
+        results (read-tests "test/resources/docs-samples-output.txt")
+        tests (map vector samples results)]
     (is (= (count samples)
            (count results)))
-    (doseq [[{:keys [name action content]} result] (map vector samples results)]
+    (doseq [[{:keys [name action content]} result] tests]
       (testing name
         (with-temp-file
           (fn [out-file]
@@ -45,6 +46,8 @@
               (binding [*out* writer]
                 (-> (liz/read-all-string content)
                     (liz/compile))))
+            (is (= {:exit 0 :out "" :err (str out-file "\n")}
+                   (sh "zig" "fmt" out-file)))
             (let [{:keys [exit out err]} (sh "zig" action out-file)]
               (is (= name (:name result)))
               (is (= exit 0))
