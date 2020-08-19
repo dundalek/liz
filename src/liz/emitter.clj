@@ -343,8 +343,12 @@
 
     (= (:form f) 'comptime)
     (do
-      (emits "comptime ")
-      (emit-block args))
+        (emits "comptime ")
+      (if (and (= (count args) 1)
+               (= (-> args first :op) :invoke)
+               (= (-> args first :fn :form) 'block))
+        (-emit (first args))
+        (emit-block args)))
 
     (= (:form f) 'not=)
     (emit-operator '!= args expr)
@@ -365,6 +369,12 @@
         (if (> (count (rest args)) 1)
           (emit-block (rest args))
           (-emit (second args))))
+
+    (= (:form f) 'range)
+    (do (assert (= (count args) 2))
+        (-emit (first args))
+        (emits "...")
+        (-emit (second args)))
 
     (= (:form f) 'case)
     (do (emits "switch (")
@@ -461,7 +471,9 @@
   (emits "{\n")
   (doseq [expr statements]
     (-emit (assoc expr :top-level true)))
-  (-emit (assoc ret :top-level true))
+  (when (and (not= (:op ret) :const)
+             (not= (:type ret) :nil))
+    (-emit (assoc ret :top-level true)))
   ;; perhaps auto-label blocks to make auto return work
   (emits "}\n"))
 

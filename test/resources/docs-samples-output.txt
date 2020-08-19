@@ -141,3 +141,19 @@ All 3 tests passed.
 
 1/1 test "union method"...OK
 All 1 tests passed.
+
+;; == test block separate scopes
+
+1/1 test "separate scopes"...OK
+All 1 tests passed.
+
+;; == test switch
+
+1/2 test "switch simple"...OK
+2/2 test "switch inside function"...OK
+All 2 tests passed.
+
+;; == test switch tagged union
+
+1/1 test "switch on tagged union"...OK
+All 1 tests passed.

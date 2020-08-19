@@ -639,3 +639,105 @@
 
   (assert (.truthy v1))
   (assert (not (.truthy v2))))
+
+;; == test block separate scopes
+(test "separate scopes"
+  (do
+    (const pi 3.14))
+  (do
+    (vari ^bool pi true)))
+
+;; == test switch
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "switch simple"
+  (const ^u64 a 10)
+  (const ^u64 zz 103)
+
+  ;; All branches of a switch expression must be able to be coerced to a
+  ;; common type.
+  ;;
+  ;; Branches cannot fallthrough. If fallthrough behavior is desired combine
+  ;; the cases and use an if.
+  (const b
+    (case a
+      ;; Multiple cases can be combined via a ''
+      [1 2 3] 0
+
+      ;; Ranges can be specified using the ... syntax. These are inclusive
+      ;; both ends.
+      (range 5 100) 1
+
+      ;; Branches can be arbitrarily complex.
+      101 (block :blk
+            (const ^u64 c 5)
+            (break :blk (* c (+ 2 1))))
+
+      ;; Switching on arbitrary expressions is allowed as long as the
+      ;; expression is known at compile-time.
+      zz zz
+      (comptime (block :blk
+                  (const ^u32 d 5)
+                  (const ^u32 e 100)
+                  (break :blk (+ d e))))
+      107
+
+      ;; The else branch catches everything not already captured.
+      ;; Else branches are mandatory unless the entire range of values
+      ;; is handled.
+      9))
+
+  (assert (= b 1)))
+
+;; Switch expressions can be used outside a function:
+(const os_msg
+  (case std.Target.current.os.tag
+    .linux "we found a linux user"
+    "not a linux user"))
+
+;; Inside a function switch statements implicitly are compile-time
+;; evaluated if the target expression is compile-time known.
+(test "switch inside function"
+  (case std.Target.current.os.tag
+    .fuchsia (do
+               ;; On an OS other than fuchsia block is not even analyzed
+               ;; so this compile error is not triggered.
+               ;; On fuchsia this compile error would be triggered.
+               (@compileError "fuchsia not supported"))
+    (do)))
+
+;; == test switch tagged union
+(const assert (.. (@import "std") -debug -assert))
+
+(test "switch on tagged union"
+  (const Point
+    (struct ^u8 x
+            ^u8 y))
+
+  (const Item
+    ^enum (union
+            ^u32 A
+            ^Point C
+            D
+            ^u32 E))
+
+  (vari a ^Item{:C ^Point{:x 1 :y 2}})
+
+  ;; Switching on more complex enums is allowed.
+  (const b
+    (case a
+      ;; A capture group is allowed on a match and will return the enum
+      ;; value matched. If the payload types of both cases are the same
+      ;; they can be put into the same switch prong.
+      [Item.A Item.E] (bind item item)
+
+      ;; A reference to the matched value can be obtained using `*` syntax.
+      Item.C (bind *item (block :blk
+                           (+= item.*.x  1)
+                           (break :blk 6)))
+      ;; No else is required if the types cases was exhaustively handled
+      Item.D 8))
+
+  (assert (= b 6))
+  (assert (= a.C.x 2)))
