@@ -264,6 +264,31 @@
       (when top-level
         (emits ";\n")))
 
+    (= (:form f) 'union)
+    (do
+      (when (-> f :form meta :extern)
+        (emits "extern "))
+      (when (-> f :form meta :packed)
+        (emits "packed "))
+      (emits "union")
+      (when-some [tag (-> expr :meta :tag)]
+        (emits "(")
+        (emits tag)
+        (emits ")"))
+      (emits " {\n")
+      (doseq [{:keys [form op] :as arg} args]
+        (if (#{:maybe-class :var} op)
+          (do (emits form)
+              ;; tag can be omitted and rely on inference
+              (when-some [tag (-> form meta :tag)]
+                (emits ": ")
+                (emits tag))
+              (emits ",\n"))
+          (-emit arg)))
+      (emits "}")
+      (when top-level
+        (emits ";\n")))
+
     (= (:form f) 'enum)
     (do
       (when (-> f :form meta :extern)
@@ -337,20 +362,23 @@
     (do (emits "|")
         (-emit (first args))
         (emits "| ")
-        (emit-block (rest args)))
+        (if (> (count (rest args)) 1)
+          (emit-block (rest args))
+          (-emit (second args))))
 
     (= (:form f) 'case)
     (do (emits "switch (")
         (-emit (first args))
         (emits ") {\n")
-        (doseq [[test then] (->> args rest butlast (partition 2))]
+        (doseq [[test then] (->> args rest (partition 2))]
           (if (= (:op (unwrap-meta test)) :vector)
             (emits-interposed ",\n" (:items (unwrap-meta test)))
             (-emit test))
           (emits " => ")
           (-emit then)
           (emits ",\n"))
-        (when-let [then (last args)]
+        (when-let [then (and (odd? (count (rest args)))
+                             (last args))]
           (emits "else => ")
           (-emit then)
           (emits ",\n"))

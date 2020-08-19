@@ -124,3 +124,20 @@ All 2 tests passed.
 
 1/1 test "switch on non-exhaustive enum"...OK
 All 1 tests passed.
+
+;; == test union
+
+1/1 test "simple union"...OK
+All 1 tests passed.
+
+;; == test Tagged union
+
+1/3 test "switch on tagged union"...OK
+2/3 test "@TagType"...OK
+3/3 test "coerce to enum"...OK
+All 3 tests passed.
+
+;; == test Union method
+
+1/1 test "union method"...OK
+All 1 tests passed.

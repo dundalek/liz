@@ -567,3 +567,75 @@
       false))
 
   (assert is_one))
+
+;; == test union
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(const Payload
+  (union ^i64 Int
+         ^f64 Float
+         ^bool Bool))
+
+(test "simple union"
+  (vari payload ^Payload {:Int 1234})
+  (assert (= payload.Int 1234))
+  (set! payload ^Payload {:Float 12.34})
+  (assert (= payload.Float 12.34)))
+
+;; == test Tagged union
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(const ComplexTypeTag
+  (enum Ok
+        NotOk))
+
+(const ComplexType ^ComplexTypeTag
+  (union
+    ^u8 Ok
+    ^void NotOk))
+
+(test "switch on tagged union"
+  (const c ^ComplexType {:Ok 42})
+  (assert (= (@as ComplexTypeTag c) ComplexTypeTag.Ok))
+
+  (case c
+    ComplexTypeTag.Ok (bind value
+                        (assert (= value 42)))
+    ComplexTypeTag.NotOk unreachable))
+
+(test "@TagType"
+  (assert (= (@TagType ComplexType) ComplexTypeTag)))
+
+(test "coerce to enum"
+  (const c1 ^ComplexType {:Ok 42})
+  (const c2 ComplexType.NotOk)
+
+  (assert (= c1 .Ok))
+  (assert (= c2 .NotOk)))
+
+;; == test Union method
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(const Variant
+  ^enum (union
+          ^i32 Int
+          ^bool Bool
+
+          ;; void can be omitted when inferring enum tag type.
+          None
+
+          (fn ^bool truthy [^Variant self]
+            (return (case self
+                      Variant.Int (bind x_int (not= x_int 0))
+                      Variant.Bool (bind x_bool x_bool)
+                      Variant.None false)))))
+
+(test "union method"
+  (vari v1 ^Variant {:Int 1})
+  (vari v2 ^Variant {:Bool false})
+
+  (assert (.truthy v1))
+  (assert (not (.truthy v2))))
