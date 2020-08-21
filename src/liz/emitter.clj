@@ -390,7 +390,9 @@
     (do (emits "|")
         (-emit (first args))
         (emits "| ")
-        (maybe-emit-block (rest args) top-level))
+        (if (zero? (count (rest args)))
+          (emits "{}")
+          (maybe-emit-block (rest args) top-level)))
 
     (= (:form f) 'range)
     (do (assert (= (count args) 2))
@@ -422,7 +424,7 @@
         (emits ": ")
         (maybe-emit-block (rest args) top-level))
 
-    (#{'async 'suspend 'resume 'return 'defer 'errdefer 'continue 'break} (:form f))
+    (#{'async 'suspend 'resume 'return 'defer 'errdefer 'continue 'break 'unreachable} (:form f))
     (emit-statement expr)
 
     (= (:form f) 'inline)

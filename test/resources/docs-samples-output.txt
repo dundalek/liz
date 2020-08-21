@@ -222,3 +222,12 @@ All 2 tests passed.
 
 1/1 test "inline for loop"...OK
 All 1 tests passed.
+
+;; == test if
+
+1/5 test "if expression"...OK
+2/5 test "if boolean"...OK
+3/5 test "if optional"...OK
+4/5 test "if error union"...OK
+5/5 test "if error union with optional"...OK
+All 5 tests passed.

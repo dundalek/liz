@@ -985,3 +985,141 @@
 
 (fn ^usize typeNameLength [^:comptime ^type T]
   (return (.-len (@typeName T))))
+
+;; == test if
+
+;; If expressions have three uses corresponding to the three types:
+;; * bool
+;; * ?T
+;; * anyerror!T
+
+(const assert (.. (@import "std") -debug -assert))
+
+(test "if expression"
+  ;; If expressions are used instead of a ternary expression.
+  (const ^u32 a 5)
+  (const ^u32 b 4)
+  (const result (if (not= a b) 47 3089))
+  (assert (= result 47)))
+
+(test "if boolean"
+  ;; If expressions test boolean conditions.
+  (const ^u32 a 5)
+  (const ^u32 b 4)
+  (cond
+    (not= a b) (assert true)
+    (= a 9) (unreachable)
+    :else (unreachable)))
+
+(test "if optional"
+  ;; If expressions test for null.
+
+  (const ^?u32 a 0)
+  (if a
+    (bind value
+      (assert (= value 0)))
+    (unreachable))
+
+  (const ^?u32 b nil)
+  (if b
+    (bind value (unreachable))
+    (assert true))
+
+  ;; The else is not required.
+  (if a
+    (bind value
+      (assert (= value 0))))
+
+  ;; To test against null only use the binary equality operator.
+  (if (= b nil)
+    (assert true))
+
+  ;; Access the value by reference using a pointer capture.
+  (vari ^?u32 c 3)
+  (if c
+    (bind *value
+      (set! value.* 2)))
+
+  (if c
+    (bind value
+      (assert (= value 2)))
+    (unreachable)))
+
+(test "if error union"
+  ;; If expressions test for errors.
+  ;; Note the |err| capture on the else.
+
+  (const ^anyerror!u32 a 0)
+  (if a
+    (bind value
+      (assert (= value 0)))
+    (bind err
+      (unreachable)))
+
+  (const ^anyerror!u32 b error.BadValue)
+  (if b
+    (bind value (unreachable))
+    (bind err
+      (assert (= err error.BadValue))))
+
+  ;; The else and |err| capture is strictly required.
+  (if a
+    (bind value
+      (assert (= value 0)))
+    (bind _))
+
+  ;; To check only the error value use an empty block expression.
+  (if b
+    (bind _)
+    (bind err
+      (assert (= err error.BadValue))))
+
+  ;; Access the value by reference using a pointer capture.
+  (vari ^anyerror!u32 c 3)
+  (if c
+    (bind *value
+      (set! value.* 9))
+    (bind err (unreachable)))
+
+  (if c
+    (bind value
+      (assert (= value 9)))
+    (bind err (unreachable))))
+
+(test "if error union with optional"
+  ;; If expressions test for errors before unwrapping optionals.
+  ;; The |optional_value| capture's type is ?u32.
+
+  (const ^anyerror!?u32 a 0)
+  (if a
+    (bind optional_value
+      (assert (= optional_value.? 0)))
+    (bind err (unreachable)))
+
+  (const ^anyerror!?u32 b nil)
+  (if b
+    (bind optional_value
+      (assert (= optional_value nil)))
+    (bind err (unreachable)))
+
+  (const ^anyerror!?u32 c error.BadValue)
+  (if c
+    (bind optional_value (unreachable))
+    (bind err
+      (assert (= err error.BadValue))))
+
+  ;; Access the value by reference by using a pointer capture each time.
+  (vari ^anyerror!?u32 d 3)
+  (if d
+    (bind *optional_value
+      ;; Workaround wrapping with `do` to emit extra curly braces
+      (do
+        (if optional_value.*
+          (bind *value
+            (set! value.* 9)))))
+    (bind err (unreachable)))
+
+  (if d
+    (bind optional_value
+      (assert (= optional_value.? 9)))
+    (bind err (unreachable))))
