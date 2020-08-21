@@ -360,11 +360,19 @@
     (= (:form f) 'comptime)
     (do
         (emits "comptime ")
-      (if (and (= (count args) 1)
-               (= (-> args first :op) :invoke)
-               (= (-> args first :fn :form) 'label))
+      (cond
+        (and (= (count args) 1)
+             (= (-> args first :op) :invoke)
+             (= (-> args first :fn :form) 'label))
         (-emit (first args))
-        (emit-block args)))
+
+        (and (= (count args) 1)
+             (= (-> args first :op) :invoke)
+             (= (-> args first :fn :form) 'assert))
+        (emit-block args)
+
+        :else
+        (maybe-emit-block args top-level)))
 
     (= (:form f) 'not=)
     (emit-operator '!= args expr)
@@ -414,11 +422,13 @@
         (emits ": ")
         (maybe-emit-block (rest args) top-level))
 
-    (= (:form f) 'break)
-    (emit-statement expr)
-
     (#{'async 'suspend 'resume 'return 'defer 'errdefer 'continue 'break} (:form f))
     (emit-statement expr)
+
+    (= (:form f) 'inline)
+    (do (assert (= (count args) 1))
+        (emits "inline ")
+        (-emit (assoc (first args) :top-level top-level)))
 
     :else
     (do

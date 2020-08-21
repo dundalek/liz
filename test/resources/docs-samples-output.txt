@@ -194,3 +194,31 @@ All 2 tests passed.
 
 1/1 test "while null capture"...OK
 All 1 tests passed.
+
+;; == test while with Error Unions
+
+1/1 test "while error union capture"...OK
+All 1 tests passed.
+
+;; == test inline while
+
+1/1 test "inline while loop"...OK
+All 1 tests passed.
+
+;; == test for
+
+1/3 test "for basics"...OK
+2/3 test "for reference"...OK
+3/3 test "for else"...OK
+All 3 tests passed.
+
+;; == test Labeled for
+
+1/2 test "nested break"...OK
+2/2 test "nested continue"...OK
+All 2 tests passed.
+
+;; == test Inline for
+
+1/1 test "inline for loop"...OK
+All 1 tests passed.

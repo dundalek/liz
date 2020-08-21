@@ -222,7 +222,7 @@
 (test "array initialization with function calls"
   (assert (= (.-x (aget more_points 4)) 3))
   (assert (= (.-y (aget more_points 4)) 6))
-  (assert (= more_points.len 10)));
+  (assert (= more_points.len 10)))
 
 ;; == test infer_list_literal.zig
 (const std (@import "std"))
@@ -847,3 +847,141 @@
             (label :blk
               (-= numbers_left 1)
               (break :blk numbers_left)))))
+
+;; == test while with Error Unions
+(const assert (.. (@import "std") -debug -assert))
+
+(test "while error union capture"
+    (vari ^u32 sum1 0)
+    (set! numbers_left 3)
+    (-> (while (eventuallyErrorSequence)
+          (bind value
+            (+= sum1 value)))
+        (else
+         (bind err
+           (assert (= err error.ReachedZero))))))
+
+(vari ^u32 numbers_left undefined)
+(fn ^anyerror!u32 eventuallyErrorSequence []
+  (return (if (= numbers_left 0)
+            error.ReachedZero
+            (label :blk
+              (-= numbers_left 1)
+              (break :blk numbers_left)))))
+
+;; == test inline while
+(const assert (.. (@import "std") -debug -assert))
+
+(test "inline while loop"
+  (comptime (vari i 0))
+  (vari ^usize sum 0)
+  (inline
+    (while-continue (< i 3) (+= i 1)
+      (const T (case i
+                 0 f32
+                 1 i8
+                 2 bool
+                 unreachable))
+      (+= sum (typeNameLength T))))
+  (assert (= sum 9)))
+
+(fn ^usize typeNameLength [^:comptime ^type T]
+  (return (.-len (@typeName T))))
+
+;; == test for
+(const assert (.. (@import "std") -debug -assert))
+
+(test "for basics"
+  (const items ^"[_]i32" [4 5 3 4 0])
+  (vari ^i32 sum 0)
+  ;; For loops iterate over slices and arrays.
+  (for [value items]
+    ;; Break and continue are supported.
+    (when (= value 0)
+      (continue))
+    (+= sum value))
+  (assert (= sum 16))
+
+  ;; To iterate over a portion of a slice reslice.
+  (for [value (slice items 0 1)]
+    (+= sum value))
+  (assert (= sum 20))
+
+  ;; To access the index of iteration specify a second capture value.
+  ;; This is zero-indexed.
+  (vari ^i32 sum2 0)
+  (for [[value i] items]
+    (assert (= (@TypeOf i) usize))
+    (+= sum2 (@intCast i32 i)))
+
+  (assert (= sum2 10)))
+
+(test "for reference"
+  (vari items ^"[_]i32" [3 4 2])
+
+  ;; Iterate over the slice by reference by
+  ;; specifying that the capture value is a pointer.
+  (for [*value items]
+    (+= value.* 1))
+
+  (assert (= (aget items 0) 4))
+  (assert (= (aget items 1) 5))
+  (assert (= (aget items 2) 3)))
+
+(test "for else"
+  ;; For allows an else attached to it the same as a while loop.
+  (vari items ^"[_]?i32" [3 4 nil 5])
+
+  ;; For loops can also be used as expressions.
+  ;; Similar to while loops when you break from a for loop the else branch is not evaluated.
+  (vari ^i32 sum 0)
+  (const result
+    (-> (for [value items]
+          (when (not= value nil)
+            (+= sum value.?)))
+        (else (label :blk
+                (assert (= sum 12))
+                (break :blk sum)))))
+  (assert (= result 12)))
+
+;; == test Labeled for
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "nested break"
+  (vari ^usize count 0)
+  (label :outer
+    (for [_ ^"[_]i32" [1 2 3 4 5]]
+      (for [_ ^"[_]i32" [1 2 3 4 5]]
+        (+= count 1)
+        (break :outer))))
+  (assert (= count 1)))
+
+
+(test "nested continue"
+  (vari ^usize count 0)
+  (label :outer
+    (for [_ ^"[_]i32" [1 2 3 4 5 6 7 8]]
+      (for [_ ^"[_]i32" [1 2 3 4 5]]
+        (+= count 1)
+        (continue :outer))))
+  (assert (= count 8)))
+
+;; == test Inline for
+(const assert (.. (@import "std") -debug -assert))
+
+(test "inline for loop"
+  (const nums ^"[_]i32" [2 4 6])
+  (vari ^usize sum 0)
+  (inline
+   (for [i nums]
+      (const T (case i
+                 2 f32
+                 4 i8
+                 6 bool
+                 unreachable))
+      (+= sum (typeNameLength T))))
+  (assert (= sum 9)))
+
+(fn ^usize typeNameLength [^:comptime ^type T]
+  (return (.-len (@typeName T))))
