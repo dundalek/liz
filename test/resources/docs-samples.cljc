@@ -1123,3 +1123,63 @@
     (bind optional_value
       (assert (= optional_value.? 9)))
     (bind err (unreachable))))
+
+;; == test defer
+(const std (@import "std"))
+(const assert std.debug.assert)
+(const print std.debug.warn)
+
+;; defer will execute an expression at the end of the current scope.
+(fn ^usize deferExample []
+  (vari ^usize a 1)
+
+  (do
+    (defer (set! a 2))
+    (set! a 1))
+  (assert (= a 2))
+
+  (set! a 5)
+  (return a))
+
+(test "defer basics"
+  (assert (= (deferExample) 5)))
+
+;; If multiple defer statements are specified, they will be executed in
+;; the reverse order they were run.
+(fn ^void deferUnwindExample []
+  (print "\n" [])
+
+  (defer
+     (print "1 " []))
+  (defer
+     (print "2 " []))
+
+  (if false
+    ;; defers are not run if they are never executed.
+    (do (defer
+            (print "3 " [])))))
+
+(test "defer unwinding"
+  (deferUnwindExample))
+
+;; The errdefer keyword is similar to defer, but will only execute if the
+;; scope returns with an error.
+;;
+;; This is especially useful in allowing a function to clean up properly
+;; on error, and replaces goto error handling tactics as seen in c.
+(fn ^!void deferErrorExample [^bool is_error]
+  (print "\nstart of function\n" [])
+
+  ;; This will always be executed on exit
+  (defer
+    (print "end of function\n" []))
+
+  (errdefer
+    (print "encountered an error!\n" []))
+
+  (if is_error
+    (return error.DeferError)))
+
+(test "errdefer unwinding"
+  (try (deferErrorExample false) (catch _ _))
+  (try (deferErrorExample true) (catch _ _)))
