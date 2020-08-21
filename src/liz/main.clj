@@ -77,8 +77,11 @@
     (doseq [form forms]
       ;; TODO One try/catch for analyzer and one for emitter
       (try
-        (-> (analyze form)
-            (emit))
+        (let [ast (analyze form)]
+          #_(binding [*print-meta* true
+                      *out* *err*]
+              (pprint ast))
+          (emit ast))
         (catch Exception e
           (let [{:keys [node]} (ex-data e)]
             (cond

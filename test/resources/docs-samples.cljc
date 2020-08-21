@@ -1183,3 +1183,53 @@
 (test "errdefer unwinding"
   (try (deferErrorExample false) (catch _ _))
   (try (deferErrorExample true) (catch _ _)))
+
+;; == test functions
+(const assert (.. (@import "std") -debug -assert))
+
+;; Functions are declared like this
+(fn ^i8 add [^i8 a ^i8 b]
+  (when (= a 0)
+      (return b))
+
+  (return (+ a b)))
+
+;; The export specifier makes a function externally visible in the generated
+;; object file, and makes it use the C ABI.
+(fn ^:export ^i8 sub [^i8 a ^i8 b] (return (- a b)))
+
+;; The extern specifier is used to declare a function that will be resolved
+;; at link time, when linking statically, or at runtime, when linking
+;; dynamically.
+;; The callconv specifier changes the calling convention of the function.
+(fn ^{:extern "kernel32"} ^"callconv(.Stdcall) noreturn" ExitProcess [^u32 exit_code])
+
+(fn ^{:extern "c"} ^f64 atan2 [^f64 a ^f64 b])
+
+;; The @setCold builtin tells the optimizer that a function is rarely called.
+(fn ^noreturn abort []
+  (@setCold true)
+  (while true))
+
+;; The naked calling convention makes a function not have any function prologue or epilogue.
+;; This can be useful when integrating with assembly.
+(fn ^"callconv(.Naked) noreturn" _start []
+  (abort))
+
+;; The inline specifier forces a function to be inlined at all call sites.
+;; If the function cannot be inlined, it is a compile-time error.
+(fn ^:inline ^u32 shiftLeftOne [^u32 a]
+  (return (<< a 1)))
+
+;; The pub specifier allows the function to be visible when importing.
+;; Another file can use @import and call sub2
+(fn ^:pub ^i8 sub2 [^i8 a ^i8 b] (return (- a b)))
+
+;; Functions can be used as values and are equivalent to pointers.
+(const call2_op (^i8 fn [^i8 a ^i8 b]))
+(fn ^i8 do_op [^call2_op fn_call ^i8 op1 ^i8 op2]
+  (return (fn_call op1 op2)))
+
+(test "function"
+  (assert (= (do_op add 5 6) 11))
+  (assert (= (do_op sub2 5 6) -1)))

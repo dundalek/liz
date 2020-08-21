@@ -246,3 +246,8 @@ encountered an error!
 end of function
 OK
 All 3 tests passed.
+
+;; == test functions
+
+1/1 test "function"...OK
+All 1 tests passed.

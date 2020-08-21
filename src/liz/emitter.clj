@@ -188,8 +188,10 @@
           (emits "}")))))
 
 (defmethod -emit :with-meta
-  [{:keys [expr meta]}]
-  (-emit (assoc expr :meta meta)))
+  [{:keys [expr meta raw-forms top-level]}]
+  (-emit (assoc expr :meta meta
+                     :parent-raw-forms raw-forms
+                     :top-level top-level)))
 
 (defmethod -emit :invoke
   [{f :fn :keys [args top-level] :as expr}]
@@ -328,7 +330,9 @@
     (do (emits "while (")
         (-emit (first args))
         (emits ") ")
-        (maybe-emit-block (rest args) top-level))
+        (if (zero? (count (rest args)))
+          (emits "{}")
+          (maybe-emit-block (rest args) top-level)))
 
     (or (= (:form f) 'while-continue))
     (do (emits "while (")
@@ -442,10 +446,17 @@
         (emits ";\n")))))
 
 (defmethod -emit :fn
-  [{:keys [local methods top-level]}]
+  [{:keys [local methods top-level raw-forms parent-raw-forms]}]
   (assert (= (count methods) 1))
   (let [name (:name local)
-        {:keys [tag export pub]} (meta name)]
+        meta-node (or name
+                      (-> parent-raw-forms first first)
+                      (-> raw-forms first first))
+        {:keys [tag export pub extern]} (meta meta-node)]
+    (when extern
+      (emits "extern ")
+      (emits (pr-str extern))
+      (emits " "))
     (when export
       (emits "export "))
     (when pub
@@ -468,11 +479,17 @@
       (emits tag)
       ;; body is :op :do
       ;; maybe explicit return is not needed and we will get :context :ctx/retur for free
-      (emits " ")
-      (assert (= (:op body) :do))
-      (-emit body)
-      (when top-level
-        (emits "\n")))))
+      (if (and (empty? (:statements body))
+               (= (:op (:ret body)) :const)
+               (= (:type (:ret body)) :nil))
+        (when top-level
+          (emits ";\n"))
+        (do
+          (emits " ")
+          (assert (= (:op body) :do))
+          (-emit body)
+          (when top-level
+            (emits "\n")))))))
 
 (defmethod -emit :if
   [{:keys [test then else top-level]}]
