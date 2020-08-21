@@ -251,3 +251,13 @@ All 3 tests passed.
 
 1/1 test "function"...OK
 All 1 tests passed.
+
+;; == test Errors
+
+1/1 test "coerce subset to superset"...OK
+All 1 tests passed.
+
+;; == test usingnamespace
+
+1/1 test "using std namespace"...OK
+All 1 tests passed.

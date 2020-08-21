@@ -318,6 +318,15 @@
       (when top-level
         (emits ";\n")))
 
+    (= (:form f) 'error)
+    (do (emits "error {\n")
+        (doseq [arg args]
+          (-emit arg)
+          (emits ",\n"))
+        (emits "}")
+        (when top-level
+          (emits "\n")))
+
     (and (= (:op f) :maybe-class)
          (binary-ops (:class f)))
     (emit-operator (:class f) args expr)
@@ -428,7 +437,7 @@
         (emits ": ")
         (maybe-emit-block (rest args) top-level))
 
-    (#{'async 'suspend 'resume 'return 'defer 'errdefer 'continue 'break 'unreachable} (:form f))
+    (#{'async 'suspend 'resume 'return 'defer 'errdefer 'continue 'break 'unreachable 'usingnamespace} (:form f))
     (emit-statement expr)
 
     (= (:form f) 'inline)

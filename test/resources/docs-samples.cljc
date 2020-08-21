@@ -1233,3 +1233,27 @@
 (test "function"
   (assert (= (do_op add 5 6) 11))
   (assert (= (do_op sub2 5 6) -1)))
+
+;; == test Errors
+(const std (@import "std"))
+
+(const FileOpenError
+  (error AccessDenied
+         OutOfMemory
+         FileNotFound))
+
+(const AllocationError
+  (error OutOfMemory))
+
+(test "coerce subset to superset"
+  (const err (foo AllocationError.OutOfMemory))
+  (.assert std.debug (= err FileOpenError.OutOfMemory)))
+
+(fn ^FileOpenError foo [^AllocationError err]
+  (return err))
+
+;; == test usingnamespace
+(usingnamespace (@import "std"))
+
+(test "using std namespace"
+  (.assert debug true))
