@@ -196,7 +196,7 @@
 
 ;; use compile-time code to initialize an array
 (vari fancy_array
-  (block :init
+  (label :init
     (vari ^"[10]Point" initial_value undefined)
     (for [[*pt, i] initial_value]
       (set! pt.* ^Point{:x (@intCast i32 i)
@@ -670,14 +670,14 @@
       (range 5 100) 1
 
       ;; Branches can be arbitrarily complex.
-      101 (block :blk
+      101 (label :blk
             (const ^u64 c 5)
             (break :blk (* c (+ 2 1))))
 
       ;; Switching on arbitrary expressions is allowed as long as the
       ;; expression is known at compile-time.
       zz zz
-      (comptime (block :blk
+      (comptime (label :blk
                   (const ^u32 d 5)
                   (const ^u32 e 100)
                   (break :blk (+ d e))))
@@ -733,7 +733,7 @@
       [Item.A Item.E] (bind item item)
 
       ;; A reference to the matched value can be obtained using `*` syntax.
-      Item.C (bind *item (block :blk
+      Item.C (bind *item (label :blk
                            (+= item.*.x  1)
                            (break :blk 6)))
       ;; No else is required if the types cases was exhaustively handled
@@ -741,3 +741,109 @@
 
   (assert (= b 6))
   (assert (= a.C.x 2)))
+
+;; == test while basic
+(const assert (.. (@import "std") -debug -assert))
+
+(test "while basic"
+  (vari ^usize i 0)
+  (while (< i 10)
+    (+= i 1))
+  (assert (= i 10)))
+
+;; == test while break
+(const assert (.. (@import "std") -debug -assert))
+
+(test "while break"
+  (vari ^usize i 0)
+  (while true
+    (if (= i 10)
+      (break))
+    (+= i 1))
+  (assert (= i 10)))
+
+;; == test while continue
+(const assert (.. (@import "std") -debug -assert))
+
+(test "while continue"
+  (vari ^usize i 0)
+  (while true
+    (+= i 1)
+    (when (< i 10)
+      (continue))
+    (break))
+  (assert (= i 10)))
+
+;; == test while continue expression
+(const assert (.. (@import "std") -debug -assert))
+
+(test "while loop continue expression"
+  (vari ^usize i 0)
+  (while-continue (< i 10) (+= i 1))
+  (assert (= i 10)))
+
+(test "while loop continue expression, more complicated"
+  (vari ^usize i 1)
+  (vari ^usize j 1)
+  (while-continue (< (* i j) 2000)
+                  (do (*= i 2) (*= j 3))
+    (const my_ij (* i j))
+    (assert (< my_ij 2000))))
+
+;; == test while else
+(const assert (.. (@import "std") -debug -assert))
+
+(test "while else"
+  (assert (rangeHasNumber 0 10 5))
+  (assert (not (rangeHasNumber 0 10 15))))
+
+(fn ^bool rangeHasNumber [^usize begin ^usize end ^usize number]
+  (vari i begin)
+  (return
+    (else (while-continue
+           (< i end)
+           (+= i 1)
+           (when (= i number)
+             (break true)))
+          false)))
+
+;; == test Labeled while
+(test "nested break"
+  (label :outer
+    (while true
+      (while true
+        (break :outer)))))
+
+(test "nested continue"
+  (vari ^usize i 0)
+  (label :outer
+    (while-continue (< i 10) (+= i 1)
+      (while true
+        (continue :outer)))))
+
+;; == test while with Optionals
+(const assert (.. (@import "std") -debug -assert))
+
+(test "while null capture"
+  (vari ^u32 sum1 0)
+  (set! numbers_left 3)
+  (while (eventuallyNullSequence)
+    (bind value
+      (+= sum1 value)))
+  (assert (= sum1 3))
+
+  (vari ^u32 sum2 0)
+  (set! numbers_left 3)
+  (-> (while (eventuallyNullSequence)
+        (bind value
+          (+= sum2 value)))
+      (else
+       (assert (= sum2 3)))))
+
+(vari ^u32 numbers_left undefined)
+(fn ^?u32 eventuallyNullSequence []
+  (return (if (= numbers_left 0)
+            null
+            (label :blk
+              (-= numbers_left 1)
+              (break :blk numbers_left)))))

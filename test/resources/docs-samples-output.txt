@@ -157,3 +157,40 @@ All 2 tests passed.
 
 1/1 test "switch on tagged union"...OK
 All 1 tests passed.
+
+;; == test while basic
+
+1/1 test "while basic"...OK
+All 1 tests passed.
+
+;; == test while break
+
+1/1 test "while break"...OK
+All 1 tests passed.
+
+;; == test while continue
+
+1/1 test "while continue"...OK
+All 1 tests passed.
+
+;; == test while continue expression
+
+1/2 test "while loop continue expression"...OK
+2/2 test "while loop continue expression, more complicated"...OK
+All 2 tests passed.
+
+;; == test while else
+
+1/1 test "while else"...OK
+All 1 tests passed.
+
+;; == test Labeled while
+
+1/2 test "nested break"...OK
+2/2 test "nested continue"...OK
+All 2 tests passed.
+
+;; == test while with Optionals
+
+1/1 test "while null capture"...OK
+All 1 tests passed.

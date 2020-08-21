@@ -24,8 +24,8 @@
        (emits sep)
        (f x)))))
 
-(defn emit-operator [operator args {:keys [top-level]}]
-  (when-not top-level
+(defn emit-operator [operator args {:keys [top-level in-statement]}]
+  (when-not (or top-level in-statement)
     (emits "("))
   (if (= (count args) 1)
     ;; Unary operator - perhaps will need listing in the future
@@ -34,9 +34,9 @@
       (-emit (first args)))
     (let [sep (str " " operator " ")]
       (emits-interposed sep args)))
-  (if top-level
-    (emits ";\n")
-    (emits ")")))
+  (cond
+    top-level (emits ";\n")
+    (not in-statement) (emits ")")))
 
 (defn emit-block [forms]
   (emits "{\n")
@@ -44,11 +44,13 @@
     (-emit (assoc form :top-level true)))
   (emits "}"))
 
-(defn emit-while [args]
-  (emits "while (")
-  (-emit (first args))
-  (emits ") ")
-  (emit-block (rest args)))
+(defn maybe-emit-block
+  ([forms] (maybe-emit-block forms false))
+  ([forms top-level]
+   (if (> (count forms) 1)
+     (emit-block forms)
+     (-emit (assoc (first forms) :top-level top-level
+                                 :in-statement true)))))
 
 (defn emit-for [args]
   ;(pprint args)
@@ -322,11 +324,25 @@
          (binary-ops (:form f)))
     (emit-operator (:form f) args expr)
 
-    (or (and (= (:op f) :var)
-             (= (:form f) 'while))
-        (and (= (:op f) :maybe-class)
-             (= (:class f) 'while)))
-    (emit-while args)
+    (or (= (:form f) 'while))
+    (do (emits "while (")
+        (-emit (first args))
+        (emits ") ")
+        (maybe-emit-block (rest args) top-level))
+
+    (or (= (:form f) 'while-continue))
+    (do (emits "while (")
+        (-emit (assoc (first args) :in-statement true))
+        (emits ") : (")
+        (-emit (assoc (second args) :in-statement true))
+        (emits ")")
+        (emit-block (drop 2 args)))
+
+    (or (= (:form f) 'else))
+    (do (assert (= (count args) 2))
+        (-emit (first args))
+        (emits " else ")
+        (-emit (assoc (second args) :top-level top-level)))
 
     (or (and (= (:op f) :var)
          (= (:form f) 'for))
@@ -346,7 +362,7 @@
         (emits "comptime ")
       (if (and (= (count args) 1)
                (= (-> args first :op) :invoke)
-               (= (-> args first :fn :form) 'block))
+               (= (-> args first :fn :form) 'label))
         (-emit (first args))
         (emit-block args)))
 
@@ -366,9 +382,7 @@
     (do (emits "|")
         (-emit (first args))
         (emits "| ")
-        (if (> (count (rest args)) 1)
-          (emit-block (rest args))
-          (-emit (second args))))
+        (maybe-emit-block (rest args) top-level))
 
     (= (:form f) 'range)
     (do (assert (= (count args) 2))
@@ -394,11 +408,11 @@
           (emits ",\n"))
         (emits "}"))
 
-    (= (:form f) 'block)
+    (= (:form f) 'label)
     (do (assert (= (-> (first args) :type) :keyword))
         (emits (-> (first args) :val name))
         (emits ": ")
-        (emit-block (rest args)))
+        (maybe-emit-block (rest args) top-level))
 
     (= (:form f) 'break)
     (emit-statement expr)
@@ -458,7 +472,7 @@
              (:literal? test)
              (:val test))
       (emits "true")
-      (-emit test))
+      (-emit (assoc test :in-statement true)))
     (emits ") ")
     (-emit (assoc then
              :top-level (and top-level (not has-else))))
@@ -481,7 +495,7 @@
   [{:keys [target val top-level]}]
   (-emit target)
   (emits " = ")
-  (-emit val)
+  (-emit (assoc val :in-statement true))
   (when top-level
     (emits ";\n")))
 
