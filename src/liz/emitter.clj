@@ -370,9 +370,10 @@
       (emits " ")
       (emit-block (rest args)))
 
-    (= (:form f) 'comptime)
+    (#{'comptime} (:form f))
     (do
-        (emits "comptime ")
+      (emits (:form f))
+      (emits " ")
       (cond
         (and (= (count args) 1)
              (= (-> args first :op) :invoke)
@@ -437,8 +438,16 @@
         (emits ": ")
         (maybe-emit-block (rest args) top-level))
 
-    (#{'async 'suspend 'resume 'return 'defer 'errdefer 'continue 'break 'unreachable 'usingnamespace} (:form f))
+    (#{'async 'await 'resume 'return 'defer 'errdefer 'continue 'break 'unreachable 'usingnamespace} (:form f))
     (emit-statement expr)
+
+    (= (:form f) 'suspend)
+    (do (emits (:form f))
+        (if (pos? (count args))
+          (do (emits " ")
+              (maybe-emit-block args top-level))
+          (when top-level
+            (emits ";\n"))))
 
     (= (:form f) 'inline)
     (do (assert (= (count args) 1))

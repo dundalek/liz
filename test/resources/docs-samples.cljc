@@ -1257,3 +1257,240 @@
 
 (test "using std namespace"
   (.assert debug true))
+
+;; == test async suspend
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(vari ^i32 x 1)
+
+(test "suspend with no resume"
+  (vari frame (async (func)))
+  (assert (= x 2)))
+
+(fn ^void func []
+  (+= x 1)
+  (suspend)
+  ;; This line is never reached because the suspend has no matching resume.
+  (+= x 1))
+
+;; == test async suspend resume
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(vari ^anyframe the_frame undefined)
+(vari result false)
+
+(test "async function suspend with block"
+  (set! _ (async (testSuspendBlock)))
+  (assert (not result))
+  (resume the_frame)
+  (assert result))
+
+(fn ^void testSuspendBlock []
+  (suspend
+    (comptime (assert (= (@TypeOf (@frame)) (* (@Frame testSuspendBlock)))))
+    (set! the_frame (@frame)))
+  (set! result true))
+
+;; == test async Resuming from Suspend Blocks
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "resume from suspend"
+  (vari ^i32 my_result 1)
+  (set! _ (async (testResumeFromSuspend (& my_result))))
+  (.assert std.debug (= my_result 2)))
+
+(fn ^void testResumeFromSuspend [^*i32 my_result]
+  (suspend
+    (resume (@frame)))
+  (+= my_result.* 1)
+  (suspend)
+  (+= my_result.* 1))
+
+;; == test async await
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "async and await"
+  ;; Here we have an exception where we do not match an async
+  ;; with an await. The test block is not async and so cannot
+  ;; have a suspend point in it.
+  ;; This is well-defined behavior, and everything is OK here.
+  ;; Note however that there would be no way to collect the
+  ;; return value of amain, if it were something other than void.
+  (set! _ (async (amain))))
+
+(fn ^void amain []
+  (vari frame (async (func)))
+  (comptime (assert (= (@TypeOf frame) (@Frame func))))
+
+  (const ^anyframe->void ptr (& frame))
+  (const ^anyframe any_ptr ptr)
+
+  (resume any_ptr)
+  (await ptr))
+
+(fn ^void func []
+  (suspend))
+
+;; == test async function await
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(vari ^anyframe the_frame undefined)
+(vari ^i32 final_result 0)
+
+(test "async function await"
+  (seq \a)
+  (set! _ (async (amain)))
+  (seq \f)
+  (resume the_frame)
+  (seq \i)
+  (assert (= final_result 1234))
+  (assert (.eql std.mem u8 (& seq_points) "abcdefghi")))
+
+(fn ^void amain []
+  (seq \b)
+  (vari f (async (another)))
+  (seq \e)
+  (set! final_result (await f))
+  (seq \h))
+
+(fn ^i32 another []
+  (seq \c)
+  (suspend
+    (seq \d)
+    (set! the_frame (@frame)))
+  (seq \g)
+  (return 1234))
+
+(vari seq_points (** ^"[_]u8"[0]
+                     (.-len "abcdefghi")))
+(vari ^usize seq_index 0)
+
+(fn ^void seq [^u8 c]
+  (aset seq_points seq_index c)
+  (+= seq_index 1))
+
+;; == run Async Function Example
+(const std (@import "std"))
+(const Allocator std.mem.Allocator)
+
+(fn ^:pub ^void main []
+  (set! _ (async (amainWrap)))
+
+  ;; Typically we would use an event loop to manage resuming async functions
+  ;; but in this example we hard code what the event loop would do
+  ;; to make things deterministic.
+  (resume global_file_frame)
+  (resume global_download_frame))
+
+(fn ^void amainWrap []
+  (try (amain)
+    (catch _ e
+      (.warn std.debug "{}\n" [e])
+      (if (@errorReturnTrace)
+        (bind trace
+          (.dumpStackTrace std.debug trace.*)))
+      (.exit std.process 1))))
+
+(fn ^!void amain []
+  (const allocator std.heap.page_allocator)
+  (vari download_frame (async (fetchUrl allocator "https://example.com/")))
+  (vari awaited_download_frame false)
+  (errdefer (if (not awaited_download_frame)
+              (if (await download_frame)
+                (bind r (.free allocator r))
+                (bind _))))
+
+  (vari file_frame (async (readFile allocator "something.txt")))
+  (vari awaited_file_frame false)
+  (errdefer (if (not awaited_file_frame)
+              (if (await file_frame)
+                (bind r (.free allocator r))
+                (bind _))))
+
+  (set! awaited_file_frame true)
+  (const file_text (try (await file_frame)))
+  (defer (.free allocator file_text))
+
+  (set! awaited_download_frame true)
+  (const download_text (try (await download_frame)))
+  (defer (.free allocator download_text))
+
+  (.warn std.debug "download_text: {}\n" [download_text])
+  (.warn std.debug "file_text: {}\n" [file_text]))
+
+(vari ^anyframe global_download_frame undefined)
+(fn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
+  (const result (try (.dupe std.mem allocator u8 "this is the downloaded url contents")))
+  (errdefer (.free allocator result))
+  (suspend (set! global_download_frame (@frame)))
+  (.warn std.debug "fetchUrl returning\n" [])
+  (return result))
+
+(vari ^anyframe global_file_frame undefined)
+(fn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
+  (const result (try (.dupe std.mem allocator u8 "this is the file contents")))
+  (errdefer (.free allocator result))
+  (suspend (set! global_file_frame (@frame)))
+  (.warn std.debug "readFile returning\n" [])
+  (return result))
+
+;; == run Blocking Function Example
+(const std (@import "std"))
+(const Allocator std.mem.Allocator)
+
+(fn ^:pub ^void main []
+  (set! _ (async (amainWrap))))
+
+(fn ^void amainWrap []
+  (try (amain)
+    (catch _ e
+      (.warn std.debug "{}\n" [e])
+      (if (@errorReturnTrace)
+        (bind trace
+          (.dumpStackTrace std.debug trace.*)))
+      (.exit std.process 1))))
+
+(fn ^!void amain []
+  (const allocator std.heap.page_allocator)
+  (vari download_frame (async (fetchUrl allocator "https://example.com/")))
+  (vari awaited_download_frame false)
+  (errdefer (if (not awaited_download_frame)
+              (if (await download_frame)
+                (bind r (.free allocator r))
+                (bind _))))
+
+  (vari file_frame (async (readFile allocator "something.txt")))
+  (vari awaited_file_frame false)
+  (errdefer (if (not awaited_file_frame)
+              (if (await file_frame)
+                (bind r (.free allocator r))
+                (bind _))))
+
+  (set! awaited_file_frame true)
+  (const file_text (try (await file_frame)))
+  (defer (.free allocator file_text))
+
+  (set! awaited_download_frame true)
+  (const download_text (try (await download_frame)))
+  (defer (.free allocator download_text))
+
+  (.warn std.debug "download_text: {}\n" [download_text])
+  (.warn std.debug "file_text: {}\n" [file_text]))
+
+(fn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
+  (const result (try (.dupe std.mem allocator u8 "this is the downloaded url contents")))
+  (errdefer (.free allocator result))
+  (.warn std.debug "fetchUrl returning\n" [])
+  (return result))
+
+(vari ^anyframe global_file_frame undefined)
+(fn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
+  (const result (try (.dupe std.mem allocator u8 "this is the file contents")))
+  (errdefer (.free allocator result))
+  (.warn std.debug "readFile returning\n" [])
+  (return result))

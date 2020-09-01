@@ -261,3 +261,42 @@ All 1 tests passed.
 
 1/1 test "using std namespace"...OK
 All 1 tests passed.
+
+;; == test async suspend
+
+1/1 test "suspend with no resume"...OK
+All 1 tests passed.
+
+;; == test async suspend resume
+
+1/1 test "async function suspend with block"...OK
+All 1 tests passed.
+
+;; == test async Resuming from Suspend Blocks
+
+1/1 test "resume from suspend"...OK
+All 1 tests passed.
+
+;; == test async await
+
+1/1 test "async and await"...OK
+All 1 tests passed.
+
+;; == test async function await
+
+1/1 test "async function await"...OK
+All 1 tests passed.
+
+;; == run Async Function Example
+
+readFile returning
+fetchUrl returning
+download_text: this is the downloaded url contents
+file_text: this is the file contents
+
+;; == run Blocking Function Example
+
+fetchUrl returning
+readFile returning
+download_text: this is the downloaded url contents
+file_text: this is the file contents
