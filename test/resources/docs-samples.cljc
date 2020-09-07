@@ -1494,3 +1494,12 @@
   (errdefer (.free allocator result))
   (.warn std.debug "readFile returning\n" [])
   (return result))
+
+;; == test Pointers allowzero
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "allowzero"
+  (var ^usize zero 0)
+  (var ptr (@intToPtr (zig* "*allowzero i32") zero))
+  (assert (= (@ptrToInt ptr) 0)))
