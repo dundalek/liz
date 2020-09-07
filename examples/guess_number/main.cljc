@@ -5,7 +5,7 @@
 (const io std.io)
 (const fmt std.fmt)
 
-(fn ^:pub ^!void main []
+(defn ^:pub ^!void main []
   (const stdout (.. io getStdOut outStream))
   (const stdin (.getStdIn io))
 

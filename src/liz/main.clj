@@ -53,6 +53,9 @@
     (and (list? form) (= (first form) 'var))
     (cons 'vari (rest form))
 
+    (and (list? form) (= (first form) 'defn))
+    (cons 'fn (rest form))
+
     :else
     (ana.jvm/macroexpand-1 form env)))
 

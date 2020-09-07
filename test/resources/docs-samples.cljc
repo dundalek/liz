@@ -1,14 +1,14 @@
 ;; == run hello
 (const std (@import "std"))
 
-(fn ^:pub ^!void main []
+(defn ^:pub ^!void main []
   (const stdout (.. std -io getStdOut outStream))
   (try (.print stdout "Hello, {}!\n" ["world"])))
 
 ;; == run hello_again
 (const print (.. (@import "std") -debug -warn))
 
-(fn ^:pub ^void main []
+(defn ^:pub ^void main []
   (print "Hello, world!\n" []))
 
 ;; == test comments
@@ -27,7 +27,7 @@
 (const os std.os)
 (const assert std.debug.assert)
 
-(fn ^:pub ^void main []
+(defn ^:pub ^void main []
     ;; integers
     (const ^i32 one_plus_one (+ 1 1))
     (print "1 + 1 = {}\n" [one_plus_one])
@@ -93,7 +93,7 @@
   (assert (= (foo) 1235))
   (assert (= (foo) 1236)))
 
-(fn ^i32 foo []
+(defn ^i32 foo []
   (const S (struct
              (var ^i32 x 1234)))
   (+= S.x 1)
@@ -112,7 +112,7 @@
   (.wait thread1)
   (.wait thread2))
 
-(fn ^void testTls [^void context]
+(defn ^void testTls [^void context]
   (assert (= x 1234))
   (+= x 1)
   (assert (= x 1235)))
@@ -215,7 +215,7 @@
 ;; call a function to initialize an array
 (var more_points (-> ^"[_]Point" [(makePoint 3)]
                      (** 10)))
-(fn ^Point makePoint [^i32 x]
+(defn ^Point makePoint [^i32 x]
   (return ^Point {:x x,
                   :y (* x 2)}))
 
@@ -231,7 +231,7 @@
 (test "fully anonymous list literal"
   (dump [(@as u32 1234), (@as f64 12.34), true, "hi"]))
 
-(fn ^void dump [^var args]
+(defn ^void dump [^var args]
   (assert (= (.-0 args) 1234))
   (assert (= (.-1 args) 12.34))
   (assert (.-2 args))
@@ -350,7 +350,7 @@
 
 ;; struct field order is determined by the compiler for optimal performance.
 ;; however, you can still calculate a struct base pointer given a field pointer:
-(fn ^void setYBasedOnX [^*f32 x ^f32 y]
+(defn ^void setYBasedOnX [^*f32 x ^f32 y]
   (const point (@fieldParentPtr Point "x" x))
   (set! point.y y))
 
@@ -363,7 +363,7 @@
 
 ;; You can return a struct from a function. This is how we do generics
 ;; in Zig:
-(fn ^type LinkedList [^:comptime ^type T]
+(defn ^type LinkedList [^:comptime ^type T]
   (return (struct
             (const ^:pub Node
               (struct
@@ -418,13 +418,13 @@
 ;; == run struct_name.zig
 (const std (@import "std"))
 
-(fn ^:pub ^void main []
+(defn ^:pub ^void main []
     (const Foo (struct))
     (.warn std.debug "variable: {}\n", [(@typeName Foo)])
     (.warn std.debug "anonymous: {}\n", [(@typeName (struct))])
     (.warn std.debug "function: {}\n", [(@typeName (List i32))]))
 
-(fn ^type List [^:comptime ^type T]
+(defn ^type List [^:comptime ^type T]
   (return (struct ^T x)))
 
 ;; == test enums.zig
@@ -797,7 +797,7 @@
   (assert (rangeHasNumber 0 10 5))
   (assert (not (rangeHasNumber 0 10 15))))
 
-(fn ^bool rangeHasNumber [^usize begin ^usize end ^usize number]
+(defn ^bool rangeHasNumber [^usize begin ^usize end ^usize number]
   (var i begin)
   (return
     (else (while-continue
@@ -841,7 +841,7 @@
        (assert (= sum2 3)))))
 
 (var ^u32 numbers_left undefined)
-(fn ^?u32 eventuallyNullSequence []
+(defn ^?u32 eventuallyNullSequence []
   (return (if (= numbers_left 0)
             null
             (label :blk
@@ -862,7 +862,7 @@
            (assert (= err error.ReachedZero))))))
 
 (var ^u32 numbers_left undefined)
-(fn ^anyerror!u32 eventuallyErrorSequence []
+(defn ^anyerror!u32 eventuallyErrorSequence []
   (return (if (= numbers_left 0)
             error.ReachedZero
             (label :blk
@@ -885,7 +885,7 @@
       (+= sum (typeNameLength T))))
   (assert (= sum 9)))
 
-(fn ^usize typeNameLength [^:comptime ^type T]
+(defn ^usize typeNameLength [^:comptime ^type T]
   (return (.-len (@typeName T))))
 
 ;; == test for
@@ -983,7 +983,7 @@
       (+= sum (typeNameLength T))))
   (assert (= sum 9)))
 
-(fn ^usize typeNameLength [^:comptime ^type T]
+(defn ^usize typeNameLength [^:comptime ^type T]
   (return (.-len (@typeName T))))
 
 ;; == test if
@@ -1130,7 +1130,7 @@
 (const print std.debug.warn)
 
 ;; defer will execute an expression at the end of the current scope.
-(fn ^usize deferExample []
+(defn ^usize deferExample []
   (var ^usize a 1)
 
   (do
@@ -1146,7 +1146,7 @@
 
 ;; If multiple defer statements are specified, they will be executed in
 ;; the reverse order they were run.
-(fn ^void deferUnwindExample []
+(defn ^void deferUnwindExample []
   (print "\n" [])
 
   (defer
@@ -1167,7 +1167,7 @@
 ;;
 ;; This is especially useful in allowing a function to clean up properly
 ;; on error, and replaces goto error handling tactics as seen in c.
-(fn ^!void deferErrorExample [^bool is_error]
+(defn ^!void deferErrorExample [^bool is_error]
   (print "\nstart of function\n" [])
 
   ;; This will always be executed on exit
@@ -1188,7 +1188,7 @@
 (const assert (.. (@import "std") -debug -assert))
 
 ;; Functions are declared like this
-(fn ^i8 add [^i8 a ^i8 b]
+(defn ^i8 add [^i8 a ^i8 b]
   (when (= a 0)
       (return b))
 
@@ -1196,38 +1196,38 @@
 
 ;; The export specifier makes a function externally visible in the generated
 ;; object file, and makes it use the C ABI.
-(fn ^:export ^i8 sub [^i8 a ^i8 b] (return (- a b)))
+(defn ^:export ^i8 sub [^i8 a ^i8 b] (return (- a b)))
 
 ;; The extern specifier is used to declare a function that will be resolved
 ;; at link time, when linking statically, or at runtime, when linking
 ;; dynamically.
 ;; The callconv specifier changes the calling convention of the function.
-(fn ^{:extern "kernel32"} ^"callconv(.Stdcall) noreturn" ExitProcess [^u32 exit_code])
+(defn ^{:extern "kernel32"} ^"callconv(.Stdcall) noreturn" ExitProcess [^u32 exit_code])
 
-(fn ^{:extern "c"} ^f64 atan2 [^f64 a ^f64 b])
+(defn ^{:extern "c"} ^f64 atan2 [^f64 a ^f64 b])
 
 ;; The @setCold builtin tells the optimizer that a function is rarely called.
-(fn ^noreturn abort []
+(defn ^noreturn abort []
   (@setCold true)
   (while true))
 
 ;; The naked calling convention makes a function not have any function prologue or epilogue.
 ;; This can be useful when integrating with assembly.
-(fn ^"callconv(.Naked) noreturn" _start []
+(defn ^"callconv(.Naked) noreturn" _start []
   (abort))
 
 ;; The inline specifier forces a function to be inlined at all call sites.
 ;; If the function cannot be inlined, it is a compile-time error.
-(fn ^:inline ^u32 shiftLeftOne [^u32 a]
+(defn ^:inline ^u32 shiftLeftOne [^u32 a]
   (return (<< a 1)))
 
 ;; The pub specifier allows the function to be visible when importing.
 ;; Another file can use @import and call sub2
-(fn ^:pub ^i8 sub2 [^i8 a ^i8 b] (return (- a b)))
+(defn ^:pub ^i8 sub2 [^i8 a ^i8 b] (return (- a b)))
 
 ;; Functions can be used as values and are equivalent to pointers.
 (const call2_op (^i8 fn [^i8 a ^i8 b]))
-(fn ^i8 do_op [^call2_op fn_call ^i8 op1 ^i8 op2]
+(defn ^i8 do_op [^call2_op fn_call ^i8 op1 ^i8 op2]
   (return (fn_call op1 op2)))
 
 (test "function"
@@ -1249,7 +1249,7 @@
   (const err (foo AllocationError.OutOfMemory))
   (.assert std.debug (= err FileOpenError.OutOfMemory)))
 
-(fn ^FileOpenError foo [^AllocationError err]
+(defn ^FileOpenError foo [^AllocationError err]
   (return err))
 
 ;; == test usingnamespace
@@ -1268,7 +1268,7 @@
   (var frame (async (func)))
   (assert (= x 2)))
 
-(fn ^void func []
+(defn ^void func []
   (+= x 1)
   (suspend)
   ;; This line is never reached because the suspend has no matching resume.
@@ -1287,7 +1287,7 @@
   (resume the_frame)
   (assert result))
 
-(fn ^void testSuspendBlock []
+(defn ^void testSuspendBlock []
   (suspend
     (comptime (assert (= (@TypeOf (@frame)) (* (@Frame testSuspendBlock)))))
     (set! the_frame (@frame)))
@@ -1302,7 +1302,7 @@
   (set! _ (async (testResumeFromSuspend (& my_result))))
   (.assert std.debug (= my_result 2)))
 
-(fn ^void testResumeFromSuspend [^*i32 my_result]
+(defn ^void testResumeFromSuspend [^*i32 my_result]
   (suspend
     (resume (@frame)))
   (+= my_result.* 1)
@@ -1322,7 +1322,7 @@
   ;; return value of amain, if it were something other than void.
   (set! _ (async (amain))))
 
-(fn ^void amain []
+(defn ^void amain []
   (var frame (async (func)))
   (comptime (assert (= (@TypeOf frame) (@Frame func))))
 
@@ -1332,7 +1332,7 @@
   (resume any_ptr)
   (await ptr))
 
-(fn ^void func []
+(defn ^void func []
   (suspend))
 
 ;; == test async function await
@@ -1351,14 +1351,14 @@
   (assert (= final_result 1234))
   (assert (.eql std.mem u8 (& seq_points) "abcdefghi")))
 
-(fn ^void amain []
+(defn ^void amain []
   (seq \b)
   (var f (async (another)))
   (seq \e)
   (set! final_result (await f))
   (seq \h))
 
-(fn ^i32 another []
+(defn ^i32 another []
   (seq \c)
   (suspend
     (seq \d)
@@ -1370,7 +1370,7 @@
                      (.-len "abcdefghi")))
 (var ^usize seq_index 0)
 
-(fn ^void seq [^u8 c]
+(defn ^void seq [^u8 c]
   (aset seq_points seq_index c)
   (+= seq_index 1))
 
@@ -1378,7 +1378,7 @@
 (const std (@import "std"))
 (const Allocator std.mem.Allocator)
 
-(fn ^:pub ^void main []
+(defn ^:pub ^void main []
   (set! _ (async (amainWrap)))
 
   ;; Typically we would use an event loop to manage resuming async functions
@@ -1387,7 +1387,7 @@
   (resume global_file_frame)
   (resume global_download_frame))
 
-(fn ^void amainWrap []
+(defn ^void amainWrap []
   (try (amain)
     (catch _ e
       (.warn std.debug "{}\n" [e])
@@ -1396,7 +1396,7 @@
           (.dumpStackTrace std.debug trace.*)))
       (.exit std.process 1))))
 
-(fn ^!void amain []
+(defn ^!void amain []
   (const allocator std.heap.page_allocator)
   (var download_frame (async (fetchUrl allocator "https://example.com/")))
   (var awaited_download_frame false)
@@ -1424,7 +1424,7 @@
   (.warn std.debug "file_text: {}\n" [file_text]))
 
 (var ^anyframe global_download_frame undefined)
-(fn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
+(defn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
   (const result (try (.dupe std.mem allocator u8 "this is the downloaded url contents")))
   (errdefer (.free allocator result))
   (suspend (set! global_download_frame (@frame)))
@@ -1432,7 +1432,7 @@
   (return result))
 
 (var ^anyframe global_file_frame undefined)
-(fn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
+(defn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
   (const result (try (.dupe std.mem allocator u8 "this is the file contents")))
   (errdefer (.free allocator result))
   (suspend (set! global_file_frame (@frame)))
@@ -1443,10 +1443,10 @@
 (const std (@import "std"))
 (const Allocator std.mem.Allocator)
 
-(fn ^:pub ^void main []
+(defn ^:pub ^void main []
   (set! _ (async (amainWrap))))
 
-(fn ^void amainWrap []
+(defn ^void amainWrap []
   (try (amain)
     (catch _ e
       (.warn std.debug "{}\n" [e])
@@ -1455,7 +1455,7 @@
           (.dumpStackTrace std.debug trace.*)))
       (.exit std.process 1))))
 
-(fn ^!void amain []
+(defn ^!void amain []
   (const allocator std.heap.page_allocator)
   (var download_frame (async (fetchUrl allocator "https://example.com/")))
   (var awaited_download_frame false)
@@ -1482,14 +1482,14 @@
   (.warn std.debug "download_text: {}\n" [download_text])
   (.warn std.debug "file_text: {}\n" [file_text]))
 
-(fn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
+(defn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
   (const result (try (.dupe std.mem allocator u8 "this is the downloaded url contents")))
   (errdefer (.free allocator result))
   (.warn std.debug "fetchUrl returning\n" [])
   (return result))
 
 (var ^anyframe global_file_frame undefined)
-(fn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
+(defn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
   (const result (try (.dupe std.mem allocator u8 "this is the file contents")))
   (errdefer (.free allocator result))
   (.warn std.debug "readFile returning\n" [])

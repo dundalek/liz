@@ -7,7 +7,7 @@
 (const suspend_download true)
 (const suspend_file true)
 
-(fn ^:pub ^void main []
+(defn ^:pub ^void main []
   (set! _ (async (amainWrap)))
   ;; This simulates an event loop)
   (when suspend_file
@@ -15,7 +15,7 @@
   (when suspend_download
     (resume global_download_frame)))
 
-(fn ^void amainWrap []
+(defn ^void amainWrap []
   (if (amain)
     (bind _
       (expect (not simulate_fail_download))
@@ -26,7 +26,7 @@
         error.FileNotFound (expect simulate_fail_file)
         (@panic "test failure")))))
 
-(fn ^!void amain []
+(defn ^!void amain []
   (const allocator std.heap.page_allocator)
   (var download_frame (async (fetchUrl allocator "https://example.com/")))
   (var download_awaited false)
@@ -55,7 +55,7 @@
   (.warn std.debug "OK!\n" []))
 
 (var ^anyframe global_download_frame undefined)
-(fn ^"anyerror![]u8" fetchUrl [^"*std.mem.Allocator" allocator ^"[]const u8" url]
+(defn ^"anyerror![]u8" fetchUrl [^"*std.mem.Allocator" allocator ^"[]const u8" url]
   (const result (try (.dupe std.mem allocator u8 "expected download text")))
   (errdefer (.free allocator result))
   (when suspend_download
@@ -66,7 +66,7 @@
   (return result))
 
 (var ^anyframe global_file_frame undefined)
-(fn ^"anyerror![]u8" readFile [^"*std.mem.Allocator" allocator ^"[]const u8" filename]
+(defn ^"anyerror![]u8" readFile [^"*std.mem.Allocator" allocator ^"[]const u8" filename]
   (const result (try (.dupe std.mem allocator u8 "expected file text")))
   (errdefer (.free allocator result))
   (when suspend_file

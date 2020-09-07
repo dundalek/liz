@@ -5,13 +5,13 @@
 (const glfw_impl (@import "glfw_impl.zig"))
 (const gl3_impl (@import "gl3_impl.zig"))
 
-(fn ^:export ^void errorCallback [^c_int err ^"[*c]const u8" description]
+(defn ^:export ^void errorCallback [^c_int err ^"[*c]const u8" description]
   (panic "Error: {}\n" [description]))
 
 ;; TODO: rename vari to var when I start to tweak analyzer passes
 (var ^std.rand.DefaultPrng rand undefined)
 
-(fn ^!void initRandom []
+(defn ^!void initRandom []
   (var ^"[8]u8" buf undefined)
   (try (std.crypto.randomBytes (slice buf 0)))
   (const seed (std.mem.readIntLittle u64 (slice buf 0 8)))
@@ -19,10 +19,10 @@
 
 ;; no implicit returns for now, but will see how it fits with zig semantics,
 ;; because it would be super nice to have
-(fn ^u32 rgbColor [^u32 col]
+(defn ^u32 rgbColor [^u32 col]
   (return (rgbaColor (| (<< col 8) 0xFF))))
 
-(fn ^u32 rgbaColor [^u32 col]
+(defn ^u32 rgbaColor [^u32 col]
   (const a (<< (& col 0xFF) 24))
   (const b (<< (& col 0xFF00) 8))
   (const g (>> (& col 0xFF0000) 8))
@@ -48,7 +48,7 @@
    (makeDice 20 0xF36D00)
    (makeDice 100 0x878787)])
 
-(fn ^Dice makeDice [^u32 sides ^u32 color]
+(defn ^Dice makeDice [^u32 sides ^u32 color]
   (return {:sides sides
            :color (rgbaColor (| (<< color 8) 0xCC))
            :color_hovered (rgbColor color)}))
@@ -57,7 +57,7 @@
 (var ^"[max_rolls]Roll" rolls undefined)
 (var ^usize rolls_len 0)
 
-(fn ^void doRoll []
+(defn ^void doRoll []
   (var ^usize i 0)
   ;; TODO while with step expression, for now put it at the end
   (while (< i rolls_len)
@@ -67,7 +67,7 @@
     (set! roll.roll (+ (rand.random.uintLessThan u32 d.sides) 1))
     (+= i 1)))
 
-(fn ^!void render []
+(defn ^!void render []
   (c.igSetNextWindowSizeXY 500 300 c.ImGuiCond_Once)
 
   (var p_open false)
@@ -141,7 +141,7 @@
 
   (c.igEnd))
 
-(fn ^:pub ^!void main []
+(defn ^:pub ^!void main []
   (try (initRandom))
 
   (aset rolls 0

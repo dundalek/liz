@@ -4,14 +4,14 @@
 
 (var ^anyframe frame undefined)
 
-(fn ^:pub ^void main []
+(defn ^:pub ^void main []
   (.warn std.debug "begin main\n" [])
   (set! _ (async (func)))
   (.warn std.debug "resume func\n" [])
   (resume frame)
   (.warn std.debug "end main\n" []))
 
-(fn ^void func []
+(defn ^void func []
   (.warn std.debug "begin func\n" [])
   (set! frame (@frame))
   (suspend)
