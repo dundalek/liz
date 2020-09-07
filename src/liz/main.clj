@@ -46,9 +46,14 @@
 (def custom-forms (into binary-ops #{'while 'for 'assert 'case}))
 
 (defn macroexpand-1 [form env]
-  (if (and (list? form)
-           (custom-forms (first form)))
+  (cond
+    (and (list? form) (custom-forms (first form)))
     form
+
+    (and (list? form) (= (first form) 'var))
+    (cons 'vari (rest form))
+
+    :else
     (ana.jvm/macroexpand-1 form env)))
 
 (defn analyze
@@ -89,11 +94,6 @@
               (do (binding [*print-meta* true]
                     (pprint node))
                   (println (ex-message e)))
-
-              (re-find #"Wrong number of args to var" (ex-message e))
-              (binding [*out* *err*]
-                (println e)
-                (println "(var name value) conflicts with clojure, use (vari name value) as a workaround for now"))
 
               :else (binding [*out* *err*]
                       (println "Unexpected error" e)))))))))

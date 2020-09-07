@@ -28,15 +28,15 @@
 
 (fn ^!void amain []
   (const allocator std.heap.page_allocator)
-  (vari download_frame (async (fetchUrl allocator "https://example.com/")))
-  (vari download_awaited false)
+  (var download_frame (async (fetchUrl allocator "https://example.com/")))
+  (var download_awaited false)
   (errdefer (when (not download_awaited)
               (if (await download_frame)
                 (bind x (.free allocator x))
                 (bind _))))
 
-  (vari file_frame (async (readFile allocator "something.txt")))
-  (vari file_awaited false)
+  (var file_frame (async (readFile allocator "something.txt")))
+  (var file_awaited false)
   (errdefer (when (not file_awaited)
               (if (await file_frame)
                 (bind x (.free allocator x))
@@ -54,7 +54,7 @@
   (expect (.eql std.mem u8 "expected file text" file_text))
   (.warn std.debug "OK!\n" []))
 
-(vari ^anyframe global_download_frame undefined)
+(var ^anyframe global_download_frame undefined)
 (fn ^"anyerror![]u8" fetchUrl [^"*std.mem.Allocator" allocator ^"[]const u8" url]
   (const result (try (.dupe std.mem allocator u8 "expected download text")))
   (errdefer (.free allocator result))
@@ -65,7 +65,7 @@
   (.warn std.debug "fetchUrl returning\n" [])
   (return result))
 
-(vari ^anyframe global_file_frame undefined)
+(var ^anyframe global_file_frame undefined)
 (fn ^"anyerror![]u8" readFile [^"*std.mem.Allocator" allocator ^"[]const u8" filename]
   (const result (try (.dupe std.mem allocator u8 "expected file text")))
   (errdefer (.free allocator result))

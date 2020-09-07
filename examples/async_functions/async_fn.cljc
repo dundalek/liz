@@ -2,7 +2,7 @@
 
 (const std (@import "std"))
 
-(vari ^anyframe frame undefined)
+(var ^anyframe frame undefined)
 
 (fn ^:pub ^void main []
   (.warn std.debug "begin main\n" [])

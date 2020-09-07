@@ -9,10 +9,10 @@
   (panic "Error: {}\n" [description]))
 
 ;; TODO: rename vari to var when I start to tweak analyzer passes
-(vari ^std.rand.DefaultPrng rand undefined)
+(var ^std.rand.DefaultPrng rand undefined)
 
 (fn ^!void initRandom []
-  (vari ^"[8]u8" buf undefined)
+  (var ^"[8]u8" buf undefined)
   (try (std.crypto.randomBytes (slice buf 0)))
   (const seed (std.mem.readIntLittle u64 (slice buf 0 8)))
   (set! rand (std.rand.DefaultPrng.init seed)))
@@ -54,14 +54,14 @@
            :color_hovered (rgbColor color)}))
 
 (const ^usize max_rolls 20)
-(vari ^"[max_rolls]Roll" rolls undefined)
-(vari ^usize rolls_len 0)
+(var ^"[max_rolls]Roll" rolls undefined)
+(var ^usize rolls_len 0)
 
 (fn ^void doRoll []
-  (vari ^usize i 0)
+  (var ^usize i 0)
   ;; TODO while with step expression, for now put it at the end
   (while (< i rolls_len)
-    (vari roll (& (aget rolls i)))
+    (var roll (& (aget rolls i)))
     ;; alternatively shortcut roll.dice since struct is same as namespace in zig
     (const d (aget dice (.-dice roll)))
     (set! roll.roll (+ (rand.random.uintLessThan u32 d.sides) 1))
@@ -70,14 +70,14 @@
 (fn ^!void render []
   (c.igSetNextWindowSizeXY 500 300 c.ImGuiCond_Once)
 
-  (vari p_open false)
+  (var p_open false)
   (set! _ (c.igBegin "Dice Roller" (& p_open) c.ImGuiWindowFlags_None))
 
   (c.igText "Rolls")
   (c.igPushIDStr "Rolls buttons")
 
   (do
-    (vari ^usize i 0)
+    (var ^usize i 0)
     (while (< i rolls_len)
       (const roll (aget rolls i))
       (const d (aget dice roll.dice))
@@ -86,11 +86,11 @@
       (c.igPushStyleColorU32 c.ImGuiCol_ButtonHovered d.color_hovered)
       (c.igPushStyleColorU32 c.ImGuiCol_ButtonActive, d.color)
 
-      (vari ^"[32]u8" buf undefined)
+      (var ^"[32]u8" buf undefined)
       (set! _ (try (std.fmt.bufPrint (& buf) "{}" [roll.roll])))
       (when (and (c.igButtonXY (& buf) 50 50)
                  (> rolls_len 1))
-        (vari ^usize j i)
+        (var ^usize j i)
         (while (< j (- rolls_len 1))
           (aset rolls j (aget rolls (+ j 1)))
           (+= j 1))
@@ -111,7 +111,7 @@
     (c.igPushStyleColorU32 c.ImGuiCol_ButtonHovered d.color_hovered)
     (c.igPushStyleColorU32 c.ImGuiCol_ButtonActive, d.color)
 
-    (vari ^"[32]u8" buf undefined)
+    (var ^"[32]u8" buf undefined)
     (set! _ (try (std.fmt.bufPrint (& buf) "{}" [d.sides])))
     (when (c.igButtonXY (& buf) 50 50)
       (std.debug.warn "Adding {}: #{}, {}\n", [rolls_len, i, d])
@@ -127,12 +127,12 @@
   (c.igPopID)
 
   (do
-    (vari ^u32 total 0)
-    (vari ^usize i 0)
+    (var ^u32 total 0)
+    (var ^usize i 0)
     (while (< i rolls_len)
       (+= total (.-roll (aget rolls i)))
       (+= i 1))
-    (vari ^"[32]u8" buf undefined)
+    (var ^"[32]u8" buf undefined)
     (set! _ (try (std.fmt.bufPrint (& buf) "{}" [total])))
     (c.igText (slice buf 0)))
 
@@ -193,7 +193,7 @@
   (defer (gl3_impl.Shutdown))
 
   (const start_time (c.glfwGetTime))
-  (vari prev_time start_time)
+  (var prev_time start_time)
 
   (while (= (c.glfwWindowShouldClose window) c.GL_FALSE)
     (c.glfwPollEvents)
@@ -208,8 +208,8 @@
     ;; c.igShowDemoWindow(null)
 
     (c.igRender)
-    (vari ^c_int w undefined)
-    (vari ^c_int h undefined)
+    (var ^c_int w undefined)
+    (var ^c_int h undefined)
     (c.glfwGetFramebufferSize window, (& w) (& h))
     (c.glViewport 0, 0, w, h)
     (c.glClearColor 0.0, 0.0, 0.0, 0.0)

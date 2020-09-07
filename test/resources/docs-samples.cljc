@@ -43,7 +43,7 @@
             (not true)])
 
     ;; optional
-    (vari ^"?[]const u8" optional_value nil)
+    (var ^"?[]const u8" optional_value nil)
     (assert (= optional_value nil))
 
     (print "\noptional 1\ntype: {}\nvalue: {}\n"
@@ -58,7 +58,7 @@
        optional_value])
 
     ;; error union
-    (vari ^anyerror!i32 number_or_error error.ArgNotFound)
+    (var ^anyerror!i32 number_or_error error.ArgNotFound)
 
     (print "\nerror union 1\ntype: {}\nvalue: {}\n"
       [(@typeName (@TypeOf number_or_error))
@@ -95,7 +95,7 @@
 
 (fn ^i32 foo []
   (const S (struct
-             (vari ^i32 x 1234)))
+             (var ^i32 x 1234)))
   (+= S.x 1)
   (return S.x))
 
@@ -103,7 +103,7 @@
 (const std (@import "std"))
 (const assert std.debug.assert)
 
-(vari ^:threadlocal ^i32 x 1234)
+(var ^:threadlocal ^i32 x 1234)
 
 (test "thread local storage"
   (const thread1 (try (std.Thread.spawn {} testTls)))
@@ -122,8 +122,8 @@
 (const assert std.debug.assert)
 
 (test "comptime vars"
-  (vari ^i32 x 1)
-  (vari ^:comptime ^i32 y 1)
+  (var ^i32 x 1)
+  (var ^:comptime ^i32 y 1)
 
   (+= x 1)
   (+= y 1)
@@ -154,13 +154,13 @@
   (assert (.eql mem u8 (& message) same_message)))
 
 (test "iterate over an array"
-  (vari ^usize sum 0)
+  (var ^usize sum 0)
   (for [byte message]
     (+= sum byte))
   (assert (= sum (+ \h \e (* \l 2) \o))))
 
 ;; modifiable array
-(vari ^"[100]i32" some_integers undefined)
+(var ^"[100]i32" some_integers undefined)
 
 (test "modify an array"
   (for [[*item, i] some_integers]
@@ -195,9 +195,9 @@
   (assert (= (aget all_zero 5) 0)))
 
 ;; use compile-time code to initialize an array
-(vari fancy_array
+(var fancy_array
   (label :init
-    (vari ^"[10]Point" initial_value undefined)
+    (var ^"[10]Point" initial_value undefined)
     (for [[*pt, i] initial_value]
       (set! pt.* ^Point{:x (@intCast i32 i)
                         :y (* (@intCast i32 i) 2)}))
@@ -213,7 +213,7 @@
   (assert (= (.-y (aget fancy_array 4)) 8)))
 
 ;; call a function to initialize an array
-(vari more_points (-> ^"[_]Point" [(makePoint 3)]
+(var more_points (-> ^"[_]Point" [(makePoint 3)]
                      (** 10)))
 (fn ^Point makePoint [^i32 x]
   (return ^Point {:x x,
@@ -303,7 +303,7 @@
                  :y 0.34})
 
 ;; Maybe we're not ready to fill out some of the fields.
-(vari p2 ^Point {:x 0.12
+(var p2 ^Point {:x 0.12
                  :y undefined})
 
 ;; Structs can have methods
@@ -355,7 +355,7 @@
   (set! point.y y))
 
 (test "field parent pointer"
-  (vari point ^Point {:x 0.1234
+  (var point ^Point {:x 0.1234
                       :y 0.5678})
 
   (setYBasedOnX (& point.x) 0.9)
@@ -380,7 +380,7 @@
   ;; do this:
   (assert (= (LinkedList i32) (LinkedList i32)))
 
-  (vari list ^"LinkedList(i32)"
+  (var list ^"LinkedList(i32)"
     {:first nil
      :last nil
      :len 0})
@@ -392,12 +392,12 @@
   (const ListOfInts (LinkedList i32))
   (assert (= ListOfInts (LinkedList i32)))
 
-  (vari node ^ListOfInts.Node
+  (var node ^ListOfInts.Node
     {:prev nil
      :next nil
      :data 1234})
 
-  (vari list2 ^"LinkedList(i32)"
+  (var list2 ^"LinkedList(i32)"
     {:first (& node)
      :last (& node)
      :len 1})
@@ -578,7 +578,7 @@
          ^bool Bool))
 
 (test "simple union"
-  (vari payload ^Payload {:Int 1234})
+  (var payload ^Payload {:Int 1234})
   (assert (= payload.Int 1234))
   (set! payload ^Payload {:Float 12.34})
   (assert (= payload.Float 12.34)))
@@ -634,8 +634,8 @@
                       Variant.None false)))))
 
 (test "union method"
-  (vari v1 ^Variant {:Int 1})
-  (vari v2 ^Variant {:Bool false})
+  (var v1 ^Variant {:Int 1})
+  (var v2 ^Variant {:Bool false})
 
   (assert (.truthy v1))
   (assert (not (.truthy v2))))
@@ -645,7 +645,7 @@
   (do
     (const pi 3.14))
   (do
-    (vari ^bool pi true)))
+    (var ^bool pi true)))
 
 ;; == test switch
 (const std (@import "std"))
@@ -722,7 +722,7 @@
             D
             ^u32 E))
 
-  (vari a ^Item{:C ^Point{:x 1 :y 2}})
+  (var a ^Item{:C ^Point{:x 1 :y 2}})
 
   ;; Switching on more complex enums is allowed.
   (const b
@@ -746,7 +746,7 @@
 (const assert (.. (@import "std") -debug -assert))
 
 (test "while basic"
-  (vari ^usize i 0)
+  (var ^usize i 0)
   (while (< i 10)
     (+= i 1))
   (assert (= i 10)))
@@ -755,7 +755,7 @@
 (const assert (.. (@import "std") -debug -assert))
 
 (test "while break"
-  (vari ^usize i 0)
+  (var ^usize i 0)
   (while true
     (if (= i 10)
       (break))
@@ -766,7 +766,7 @@
 (const assert (.. (@import "std") -debug -assert))
 
 (test "while continue"
-  (vari ^usize i 0)
+  (var ^usize i 0)
   (while true
     (+= i 1)
     (when (< i 10)
@@ -778,13 +778,13 @@
 (const assert (.. (@import "std") -debug -assert))
 
 (test "while loop continue expression"
-  (vari ^usize i 0)
+  (var ^usize i 0)
   (while-continue (< i 10) (+= i 1))
   (assert (= i 10)))
 
 (test "while loop continue expression, more complicated"
-  (vari ^usize i 1)
-  (vari ^usize j 1)
+  (var ^usize i 1)
+  (var ^usize j 1)
   (while-continue (< (* i j) 2000)
                   (do (*= i 2) (*= j 3))
     (const my_ij (* i j))
@@ -798,7 +798,7 @@
   (assert (not (rangeHasNumber 0 10 15))))
 
 (fn ^bool rangeHasNumber [^usize begin ^usize end ^usize number]
-  (vari i begin)
+  (var i begin)
   (return
     (else (while-continue
            (< i end)
@@ -815,7 +815,7 @@
         (break :outer)))))
 
 (test "nested continue"
-  (vari ^usize i 0)
+  (var ^usize i 0)
   (label :outer
     (while-continue (< i 10) (+= i 1)
       (while true
@@ -825,14 +825,14 @@
 (const assert (.. (@import "std") -debug -assert))
 
 (test "while null capture"
-  (vari ^u32 sum1 0)
+  (var ^u32 sum1 0)
   (set! numbers_left 3)
   (while (eventuallyNullSequence)
     (bind value
       (+= sum1 value)))
   (assert (= sum1 3))
 
-  (vari ^u32 sum2 0)
+  (var ^u32 sum2 0)
   (set! numbers_left 3)
   (-> (while (eventuallyNullSequence)
         (bind value
@@ -840,7 +840,7 @@
       (else
        (assert (= sum2 3)))))
 
-(vari ^u32 numbers_left undefined)
+(var ^u32 numbers_left undefined)
 (fn ^?u32 eventuallyNullSequence []
   (return (if (= numbers_left 0)
             null
@@ -852,7 +852,7 @@
 (const assert (.. (@import "std") -debug -assert))
 
 (test "while error union capture"
-    (vari ^u32 sum1 0)
+    (var ^u32 sum1 0)
     (set! numbers_left 3)
     (-> (while (eventuallyErrorSequence)
           (bind value
@@ -861,7 +861,7 @@
          (bind err
            (assert (= err error.ReachedZero))))))
 
-(vari ^u32 numbers_left undefined)
+(var ^u32 numbers_left undefined)
 (fn ^anyerror!u32 eventuallyErrorSequence []
   (return (if (= numbers_left 0)
             error.ReachedZero
@@ -873,8 +873,8 @@
 (const assert (.. (@import "std") -debug -assert))
 
 (test "inline while loop"
-  (comptime (vari i 0))
-  (vari ^usize sum 0)
+  (comptime (var i 0))
+  (var ^usize sum 0)
   (inline
     (while-continue (< i 3) (+= i 1)
       (const T (case i
@@ -893,7 +893,7 @@
 
 (test "for basics"
   (const items ^"[_]i32" [4 5 3 4 0])
-  (vari ^i32 sum 0)
+  (var ^i32 sum 0)
   ;; For loops iterate over slices and arrays.
   (for [value items]
     ;; Break and continue are supported.
@@ -909,7 +909,7 @@
 
   ;; To access the index of iteration specify a second capture value.
   ;; This is zero-indexed.
-  (vari ^i32 sum2 0)
+  (var ^i32 sum2 0)
   (for [[value i] items]
     (assert (= (@TypeOf i) usize))
     (+= sum2 (@intCast i32 i)))
@@ -917,7 +917,7 @@
   (assert (= sum2 10)))
 
 (test "for reference"
-  (vari items ^"[_]i32" [3 4 2])
+  (var items ^"[_]i32" [3 4 2])
 
   ;; Iterate over the slice by reference by
   ;; specifying that the capture value is a pointer.
@@ -930,11 +930,11 @@
 
 (test "for else"
   ;; For allows an else attached to it the same as a while loop.
-  (vari items ^"[_]?i32" [3 4 nil 5])
+  (var items ^"[_]?i32" [3 4 nil 5])
 
   ;; For loops can also be used as expressions.
   ;; Similar to while loops when you break from a for loop the else branch is not evaluated.
-  (vari ^i32 sum 0)
+  (var ^i32 sum 0)
   (const result
     (-> (for [value items]
           (when (not= value nil)
@@ -949,7 +949,7 @@
 (const assert std.debug.assert)
 
 (test "nested break"
-  (vari ^usize count 0)
+  (var ^usize count 0)
   (label :outer
     (for [_ ^"[_]i32" [1 2 3 4 5]]
       (for [_ ^"[_]i32" [1 2 3 4 5]]
@@ -959,7 +959,7 @@
 
 
 (test "nested continue"
-  (vari ^usize count 0)
+  (var ^usize count 0)
   (label :outer
     (for [_ ^"[_]i32" [1 2 3 4 5 6 7 8]]
       (for [_ ^"[_]i32" [1 2 3 4 5]]
@@ -972,7 +972,7 @@
 
 (test "inline for loop"
   (const nums ^"[_]i32" [2 4 6])
-  (vari ^usize sum 0)
+  (var ^usize sum 0)
   (inline
    (for [i nums]
       (const T (case i
@@ -1035,7 +1035,7 @@
     (assert true))
 
   ;; Access the value by reference using a pointer capture.
-  (vari ^?u32 c 3)
+  (var ^?u32 c 3)
   (if c
     (bind *value
       (set! value.* 2)))
@@ -1075,7 +1075,7 @@
       (assert (= err error.BadValue))))
 
   ;; Access the value by reference using a pointer capture.
-  (vari ^anyerror!u32 c 3)
+  (var ^anyerror!u32 c 3)
   (if c
     (bind *value
       (set! value.* 9))
@@ -1109,7 +1109,7 @@
       (assert (= err error.BadValue))))
 
   ;; Access the value by reference by using a pointer capture each time.
-  (vari ^anyerror!?u32 d 3)
+  (var ^anyerror!?u32 d 3)
   (if d
     (bind *optional_value
       ;; Workaround wrapping with `do` to emit extra curly braces
@@ -1131,7 +1131,7 @@
 
 ;; defer will execute an expression at the end of the current scope.
 (fn ^usize deferExample []
-  (vari ^usize a 1)
+  (var ^usize a 1)
 
   (do
     (defer (set! a 2))
@@ -1262,10 +1262,10 @@
 (const std (@import "std"))
 (const assert std.debug.assert)
 
-(vari ^i32 x 1)
+(var ^i32 x 1)
 
 (test "suspend with no resume"
-  (vari frame (async (func)))
+  (var frame (async (func)))
   (assert (= x 2)))
 
 (fn ^void func []
@@ -1278,8 +1278,8 @@
 (const std (@import "std"))
 (const assert std.debug.assert)
 
-(vari ^anyframe the_frame undefined)
-(vari result false)
+(var ^anyframe the_frame undefined)
+(var result false)
 
 (test "async function suspend with block"
   (set! _ (async (testSuspendBlock)))
@@ -1298,7 +1298,7 @@
 (const assert std.debug.assert)
 
 (test "resume from suspend"
-  (vari ^i32 my_result 1)
+  (var ^i32 my_result 1)
   (set! _ (async (testResumeFromSuspend (& my_result))))
   (.assert std.debug (= my_result 2)))
 
@@ -1323,7 +1323,7 @@
   (set! _ (async (amain))))
 
 (fn ^void amain []
-  (vari frame (async (func)))
+  (var frame (async (func)))
   (comptime (assert (= (@TypeOf frame) (@Frame func))))
 
   (const ^anyframe->void ptr (& frame))
@@ -1339,8 +1339,8 @@
 (const std (@import "std"))
 (const assert std.debug.assert)
 
-(vari ^anyframe the_frame undefined)
-(vari ^i32 final_result 0)
+(var ^anyframe the_frame undefined)
+(var ^i32 final_result 0)
 
 (test "async function await"
   (seq \a)
@@ -1353,7 +1353,7 @@
 
 (fn ^void amain []
   (seq \b)
-  (vari f (async (another)))
+  (var f (async (another)))
   (seq \e)
   (set! final_result (await f))
   (seq \h))
@@ -1366,9 +1366,9 @@
   (seq \g)
   (return 1234))
 
-(vari seq_points (** ^"[_]u8"[0]
+(var seq_points (** ^"[_]u8"[0]
                      (.-len "abcdefghi")))
-(vari ^usize seq_index 0)
+(var ^usize seq_index 0)
 
 (fn ^void seq [^u8 c]
   (aset seq_points seq_index c)
@@ -1398,15 +1398,15 @@
 
 (fn ^!void amain []
   (const allocator std.heap.page_allocator)
-  (vari download_frame (async (fetchUrl allocator "https://example.com/")))
-  (vari awaited_download_frame false)
+  (var download_frame (async (fetchUrl allocator "https://example.com/")))
+  (var awaited_download_frame false)
   (errdefer (if (not awaited_download_frame)
               (if (await download_frame)
                 (bind r (.free allocator r))
                 (bind _))))
 
-  (vari file_frame (async (readFile allocator "something.txt")))
-  (vari awaited_file_frame false)
+  (var file_frame (async (readFile allocator "something.txt")))
+  (var awaited_file_frame false)
   (errdefer (if (not awaited_file_frame)
               (if (await file_frame)
                 (bind r (.free allocator r))
@@ -1423,7 +1423,7 @@
   (.warn std.debug "download_text: {}\n" [download_text])
   (.warn std.debug "file_text: {}\n" [file_text]))
 
-(vari ^anyframe global_download_frame undefined)
+(var ^anyframe global_download_frame undefined)
 (fn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
   (const result (try (.dupe std.mem allocator u8 "this is the downloaded url contents")))
   (errdefer (.free allocator result))
@@ -1431,7 +1431,7 @@
   (.warn std.debug "fetchUrl returning\n" [])
   (return result))
 
-(vari ^anyframe global_file_frame undefined)
+(var ^anyframe global_file_frame undefined)
 (fn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
   (const result (try (.dupe std.mem allocator u8 "this is the file contents")))
   (errdefer (.free allocator result))
@@ -1457,15 +1457,15 @@
 
 (fn ^!void amain []
   (const allocator std.heap.page_allocator)
-  (vari download_frame (async (fetchUrl allocator "https://example.com/")))
-  (vari awaited_download_frame false)
+  (var download_frame (async (fetchUrl allocator "https://example.com/")))
+  (var awaited_download_frame false)
   (errdefer (if (not awaited_download_frame)
               (if (await download_frame)
                 (bind r (.free allocator r))
                 (bind _))))
 
-  (vari file_frame (async (readFile allocator "something.txt")))
-  (vari awaited_file_frame false)
+  (var file_frame (async (readFile allocator "something.txt")))
+  (var awaited_file_frame false)
   (errdefer (if (not awaited_file_frame)
               (if (await file_frame)
                 (bind r (.free allocator r))
@@ -1488,7 +1488,7 @@
   (.warn std.debug "fetchUrl returning\n" [])
   (return result))
 
-(vari ^anyframe global_file_frame undefined)
+(var ^anyframe global_file_frame undefined)
 (fn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
   (const result (try (.dupe std.mem allocator u8 "this is the file contents")))
   (errdefer (.free allocator result))

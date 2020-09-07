@@ -11,7 +11,7 @@
 
   (try (.print stdout "Welcome to the Guess Number Game in Zig.\n" []))
 
-  (vari ^"[@sizeOf(u64)]u8" seed_bytes undefined)
+  (var ^"[@sizeOf(u64)]u8" seed_bytes undefined)
   (try
     (std.crypto.randomBytes (slice seed_bytes 0))
     (catch _ err
@@ -19,13 +19,13 @@
       (return err)))
 
   (const seed (std.mem.readIntNative u64 (& seed_bytes)))
-  (vari prng (std.rand.DefaultPrng.init seed))
+  (var prng (std.rand.DefaultPrng.init seed))
 
   (const answer (+ (prng.random.intRangeLessThan u8, 0, 100) 1))
 
   (while true
     (try (.print stdout "\nGuess a number between 1 and 100: " []))
-    (vari ^"[20]u8" line_buf undefined)
+    (var ^"[20]u8" line_buf undefined)
 
     (const amt (try (.read stdin (& line_buf))))
     (when (= amt line_buf.len)
