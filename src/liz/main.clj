@@ -1,12 +1,16 @@
+(set! *warn-on-reflection* true)
 (ns liz.main
+  (:gen-class)
   (:refer-clojure :exclude [macroexpand-1 compile])
-  (:require [clojure.tools.reader :as reader]
-            [clojure.tools.reader.reader-types :as rt]
+  (:require #_[clojure.tools.reader :as reader]
+            #_[clojure.tools.reader.reader-types :as rt]
             [clojure.tools.analyzer :as ana]
             [clojure.tools.analyzer.env :as env]
+            [clojure.tools.cli :as cli]
             [clojure.java.io :as io]
             [clojure.tools.analyzer.jvm :as ana.jvm]
             [clojure.tools.analyzer.passes.jvm.emit-form :refer [emit-form]]
+            [edamame.core :as edamame]
             [liz.emitter :refer [emit]]
             [liz.lang :refer [binary-ops]]
             [clojure.pprint :refer [pprint]]
@@ -69,16 +73,19 @@
      #_(ana.jvm/run-passes (ana/analyze form env))
      (ana/analyze form env))))
 
-(defn read-all
-  ([rdr] (read-all {:eof (Object.)} rdr))
-  ([{:keys [eof] :as opts} rdr]
-   (let [form (reader/read opts rdr)]
-     (when-not (identical? form eof)
-       (cons form (lazy-seq (read-all opts rdr)))))))
+#_(defn read-all
+    ([rdr] (read-all {:eof (Object.)} rdr))
+    ([{:keys [eof] :as opts} rdr]
+     (let [form (reader/read opts rdr)]
+       (when-not (identical? form eof)
+         (cons form (lazy-seq (read-all opts rdr)))))))
+
+#_(defn read-all-string [s]
+    (read-all (rt/indexing-push-back-reader
+                (rt/string-reader s))))
 
 (defn read-all-string [s]
-  (read-all (rt/indexing-push-back-reader
-              (rt/string-reader s))))
+  (edamame/parse-string-all s {:deref true}))
 
 (defn compile [forms]
   (env/ensure (global-env)
@@ -101,20 +108,80 @@
               :else (binding [*out* *err*]
                       (println "Unexpected error" e)))))))))
 
-(defn -main [& filenames]
-  (doseq [file-in filenames]
-    (let [file-out (str/replace file-in #"\.[^.]+$" ".zig")]
-      (with-open [rdr (rt/indexing-push-back-reader
+(defn compile-file [file-in out-dir]
+  (let [file-out (str out-dir "/" (str/replace file-in #"\.[^.]+$" ".zig"))]
+    (with-open [writer (io/writer file-out)]
+      (binding [*out* writer]
+        (-> (slurp file-in)
+            (read-all-string)
+            (compile))))
+
+    #_(with-open [rdr (rt/indexing-push-back-reader
                         (io/reader file-in))
                   writer (io/writer file-out)]
         (binding [*out* writer]
           (compile (read-all rdr))))
-      ;; TODO detect if zig is present
-      (let [{:keys [exit err]} (sh "zig" "fmt" file-out)]
-        (when-not (zero? exit)
-          (println (str "zig fmt error for " file-out ":"))
-          (println err)))))
-  (shutdown-agents))
+
+    ;; TODO detect if zig is present
+    (let [{:keys [exit err]} (sh "zig" "fmt" file-out)]
+      (when-not (zero? exit)
+        (println (str "zig fmt error for " file-out ":"))
+        (println err)))))
+
+(def version (str/trim (slurp (io/resource "LIZ_VERSION"))))
+
+(defn usage [options-summary]
+  (->> ["Usage: liz [options] [file...]"
+        ""
+        "Options:"
+        options-summary]
+       (str/join \newline)))
+
+(defn error-msg [errors]
+  (->> errors
+    (cons "The following errors occurred while parsing your command:\n\n")
+    (str/join \newline)))
+
+(def cli-options
+  [["-h" "--help"]
+   [nil "--out-dir DIR" "Directory where to output compiled files. Defaults to current directory."]
+   [nil "--version"]])
+
+(defn process-args [args]
+  (let [{:keys [options arguments errors summary]} (cli/parse-opts args cli-options)]
+    (cond
+      (:version options)
+      {:action :exit
+       :options {:message version
+                 :ok? true}}
+
+      errors
+      {:action :exit
+       :options {:message (error-msg errors)}}
+
+      (pos? (count arguments))
+      {:action :compile
+       :options {:out-dir (:out-dir options)
+                 :files arguments}}
+
+      :else
+      {:action :exit
+       :options {:message (usage summary)
+                 :ok? true}})))
+
+(defn exit-message [{:keys [message ok?]}]
+  (println message)
+  (System/exit (if ok? 0 1)))
+
+(defn -main [& args]
+  (let [{:keys [action options]} (process-args args)]
+    (case action
+      :exit (exit-message options)
+      :compile (let [{:keys [files out-dir]} options
+                     out-dir (or out-dir ".")]
+                 (doseq [file-in files]
+                   (compile-file file-in out-dir))
+                 (shutdown-agents)))))
 
 (comment
   (let [form (reader/read-string

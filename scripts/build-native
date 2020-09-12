@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+set -euo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+NATIVE_IMAGE="$GRAALVM_HOME/bin/native-image"
+
+if [ -z "$NATIVE_IMAGE" ]; then
+    echo 'Please set $NATIVE_IMAGE'
+    exit 1
+fi
+
+scripts/build-jar
+
+$NATIVE_IMAGE \
+    -jar target/liz.jar \
+    -H:Name=liz \
+    -H:+ReportExceptionStackTraces \
+    --initialize-at-build-time  \
+    --verbose \
+    --no-fallback \
+    --no-server \
+    "-J-Xmx3g" \
+    --report-unsupported-elements-at-runtime \
+    target/liz

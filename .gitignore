@@ -6,3 +6,4 @@ target
 imgui.ini
 .nrepl-port
 /tmp*
+/pom.xml
