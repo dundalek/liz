@@ -26,35 +26,64 @@
               (assoc (parse-header header)
                      :content (str/join "\n" lines))))))
 
+(defn run-test-case [{:keys [name action content]} result]
+  (testing name
+    (with-temp-file
+      (fn [out-file]
+        (with-open [writer (io/writer out-file)]
+          (binding [*out* writer]
+            (-> (liz/read-all-string content)
+                (liz/compile))))
+        (is (= {:exit 0 :out "" :err (str out-file "\n")}
+               (sh "zig" "fmt" out-file)))
+        (let [{:keys [exit out err]} (sh "zig" action out-file)]
+          (is (= name (:name result)))
+          (is (= exit 0))
+          (is (= (str/trim (str out "\n" err))
+                 (str/trim (:content result))))
+
+          (comment
+            (println (str ";; == " action " " name))
+            (println out)
+            (println err)))))))
+
 ;(deftest compile-forms
 ;  (is (= "pub extern \"c\" fn printf(format: [*:0]const u8, ...) c_int;"
 ;         (with-out-str
 ;           (-> (liz/read-all-string "(fn ^:pub ^c_int printf [^\"[*:0]const u8\" format ...])")
 ;               (liz/compile))))))
 
-(deftest docs-samples
-  (let [samples (read-tests "test/resources/docs-samples.cljc")
-        results (read-tests "test/resources/docs-samples-output.txt")
-        tests (map vector samples results)]
-    (is (= (count samples)
+(defn run-test-cases [cases results]
+  (let [tests (map vector cases results)]
+    (is (= (count cases)
            (count results)))
-    (doseq [[{:keys [name action content]} result] tests]
-      (testing name
-        (with-temp-file
-          (fn [out-file]
-            (with-open [writer (io/writer out-file)]
-              (binding [*out* writer]
-                (-> (liz/read-all-string content)
-                    (liz/compile))))
-            (is (= {:exit 0 :out "" :err (str out-file "\n")}
-                   (sh "zig" "fmt" out-file)))
-            (let [{:keys [exit out err]} (sh "zig" action out-file)]
-              (is (= name (:name result)))
-              (is (= exit 0))
-              (is (= (str/trim (str out "\n" err))
-                     (str/trim (:content result))))
+    (doseq [[{:keys [name] :as test-case} result] tests]
+      (run-test-case test-case result))))
 
-              (comment
-                (println (str ";; == " action " " name))
-                (println out)
-                (println err)))))))))
+(deftest docs-samples
+  (run-test-cases
+    (read-tests "test/resources/docs-samples.cljc")
+    (read-tests "test/resources/docs-samples-output.txt")))
+
+(deftest features
+  (run-test-cases
+    (read-tests "test/resources/features.cljc")
+    (read-tests "test/resources/features-output.txt")))
+
+;;(defmacro define-test-cases [suite-name cases results]
+;;  (let [tests (map vector (eval cases) (eval results))]
+;;    `(do (is (= ~(count cases)
+;;                ~(count results)))
+;;         ~@(for [[{:keys [name] :as test-case} result] tests]
+;;             `(deftest ~(symbol (str suite-name "--" (str/replace name #"\s" "--")))
+;;                (run-test-case ~test-case ~result))))))
+;;
+;;(define-test-cases
+;;  "samples"
+;;  (read-tests "test/resources/docs-samples.cljc")
+;;  (read-tests "test/resources/docs-samples-output.txt"))
+;;
+;;(define-test-cases
+;;  "features"
+;;  (read-tests "test/resources/features.cljc")
+;;  (read-tests "test/resources/features-output.txt"))

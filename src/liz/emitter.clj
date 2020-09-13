@@ -84,7 +84,9 @@
 
 (defmethod -emit :maybe-class
   [expr]
-  (emits (:class expr)))
+  (let [s (str (:class expr))
+        quoted? (= (first s) \')]
+    (emits (cond-> s quoted? (subs 1)))))
 
 (defmethod -emit :var
   [{:keys [form]}]

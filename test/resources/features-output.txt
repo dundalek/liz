@@ -1,0 +1,4 @@
+;; == test using special form names
+
+1/1 test "using special form names"...OK
+All 1 tests passed.
