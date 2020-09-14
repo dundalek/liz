@@ -73,6 +73,9 @@
   (when top-level
     (emits ";\n")))
 
+(defmethod -emit :statement
+  [expr] (emit-statement expr))
+
 (defn emit-aget [{:keys [args top-level]}]
   (-emit (first args))
   (doseq [index (rest args)]
@@ -439,9 +442,6 @@
         (emits (-> (first args) :val name))
         (emits ": ")
         (maybe-emit-block (rest args) top-level))
-
-    (#{'async 'await 'resume 'return 'defer 'errdefer 'continue 'break 'unreachable 'usingnamespace} (:form f))
-    (emit-statement expr)
 
     (= (:form f) 'suspend)
     (do (emits (:form f))

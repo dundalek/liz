@@ -5,6 +5,9 @@
   (:require #_[clojure.tools.reader :as reader]
             #_[clojure.tools.reader.reader-types :as rt]
             [clojure.tools.analyzer :as ana]
+            [clojure.tools.analyzer.passes :as ana.passes]
+            [clojure.tools.analyzer.passes
+             [source-info :refer [source-info]]]
             [clojure.tools.analyzer.env :as env]
             [clojure.tools.cli :as cli]
             [clojure.java.io :as io]
@@ -63,15 +66,42 @@
     :else
     (ana.jvm/macroexpand-1 form env)))
 
+(defn classify-invoke
+  ""
+  {:pass-info {:walk :post :depends #{} :after #{#'source-info}}}
+  [{:keys [op target form tag env class] :as ast}]
+  (if-not (= op :invoke)
+    ast
+    (let [the-fn (:fn ast)]
+      (if (#{'async 'await 'resume 'return 'defer 'errdefer 'continue 'break 'unreachable 'usingnamespace} (:form the-fn))
+        (assoc ast :op :statement)
+        ast))))
+
+(def default-passes
+  "Set of passes that will be run by default on the AST by #'run-passes"
+  #{#'source-info
+
+    ;;#'elide-meta
+    ;;#'clojure.tools.analyzer.passes.trim
+
+    #'classify-invoke})
+
+(def scheduled-default-passes
+  (ana.passes/schedule default-passes))
+
+(defn run-passes [ast]
+  (scheduled-default-passes ast))
+
 (defn analyze
   ([form] (analyze form (ana/empty-env)))
   ([form env]
    (binding [ana/macroexpand-1 macroexpand-1
              ana/create-var ana.jvm/create-var
-             ana/parse ana.jvm/parse
+             ana/parse ana/-parse
              ana/var? var?]
-     #_(ana.jvm/run-passes (ana/analyze form env))
-     (ana/analyze form env))))
+     #_ ana.jvm/run-passes
+     (-> (ana/analyze form env)
+         (run-passes)))))
 
 #_(defn read-all
     ([rdr] (read-all {:eof (Object.)} rdr))
