@@ -17,38 +17,36 @@
             [liz.emitter :refer [emit]]
             [liz.lang :refer [binary-ops]]
             [clojure.pprint :refer [pprint]]
-            [clojure.tools.analyzer.utils :as ana.utils]
             [clojure.string :as str]
             [clojure.java.shell :refer [sh]]))
 
 (defn build-ns-map []
-  (-> (ana.jvm/build-ns-map)
-      (update-in ['clojure.core :mappings] dissoc 'while)
-      (update-in ['user :mappings] dissoc 'while)))
+  (let [mappings {'-> #'clojure.core/->
+                  '->> #'clojure.core/->>
+                  '= #'clojure.core/=
+                  '.. #'clojure.core/..
+                  'cond #'clojure.core/cond
+                  'fn #'clojure.core/fn
+                  'deref #'clojure.core/deref
+                  'aset #'clojure.core/aset
+                  'int #'clojure.core/int
+                  'when #'clojure.core/when}]
+    {'clojure.core
+     {:mappings mappings
+      :aliases {}
+      :ns 'clojure.core}
+     'user
+     {:mappings mappings
+      :aliases {}
+      :ns 'user}})
+  #_(-> (ana.jvm/build-ns-map)
+        (update-in ['clojure.core :mappings] dissoc 'while)
+        (update-in ['user :mappings] dissoc 'while)))
 
 (defn global-env []
   (atom {:namespaces (build-ns-map)
          :update-ns-map! (fn update-ns-map! []
                            (swap! env/*env* assoc-in [:namespaces] (build-ns-map)))}))
-;;
-;(-> (get (:namespaces (deref (make-global-env)))
-;         'clojure.core)
-;    (:mappings)
-;    (get '<)
-;    meta)
-
-;(env/with-env (global-env)
-;  (ana.jvm/macroexpand-1 (reader/read-string "(while true (println i) (+= i 1))")))
-;
-;(-> (global-env) deref :namespaces (get 'user ) :mappings (get 'when))
-
-
-;(env/ensure (global-env)
-;  (ana.utils/resolve-sym 'while (ana/empty-env)))
-;  ;(ana.utils/resolve-ns nil (ana/empty-env)))
-
-
-(def global-env ana.jvm/global-env)
 
 (def custom-forms (into binary-ops #{'while 'for 'assert 'case}))
 
