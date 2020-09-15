@@ -1,7 +1,8 @@
 (ns liz.main-test
   (:require [clojure.test :refer [deftest testing is]]
             [clojure.string :as str]
-            [liz.main :as liz]
+            [liz.impl.reader :as reader]
+            [liz.impl.compiler :as compiler]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]])
   (:import (java.io File)))
@@ -32,8 +33,8 @@
       (fn [out-file]
         (with-open [writer (io/writer out-file)]
           (binding [*out* writer]
-            (-> (liz/read-all-string content)
-                (liz/compile))))
+            (-> (reader/read-all-string content)
+                (compiler/compile))))
         (is (= {:exit 0 :out "" :err (str out-file "\n")}
                (sh "zig" "fmt" out-file)))
         (let [{:keys [exit out err]} (sh "zig" action out-file)]

@@ -1,4 +1,4 @@
-(ns liz.emitter
+(ns liz.impl.emitter
   (:require [clojure.pprint :refer [pprint]]
             [liz.lang :refer [binary-ops]]))
 
