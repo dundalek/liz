@@ -20,15 +20,19 @@
             [clojure.string :as str]
             [clojure.java.shell :refer [sh]]))
 
+(defmacro liz-defn [& body]
+  (cons 'fn body))
+
 (defn build-ns-map []
   (let [mappings {'-> #'clojure.core/->
                   '->> #'clojure.core/->>
                   '= #'clojure.core/=
                   '.. #'clojure.core/..
-                  'cond #'clojure.core/cond
-                  'fn #'clojure.core/fn
-                  'deref #'clojure.core/deref
                   'aset #'clojure.core/aset
+                  'cond #'clojure.core/cond
+                  'defn #'liz-defn
+                  'deref #'clojure.core/deref
+                  'fn #'clojure.core/fn
                   'int #'clojure.core/int
                   'when #'clojure.core/when}]
     {'clojure.core
@@ -48,20 +52,9 @@
          :update-ns-map! (fn update-ns-map! []
                            (swap! env/*env* assoc-in [:namespaces] (build-ns-map)))}))
 
-(def custom-forms (into binary-ops #{'while 'for 'assert 'case}))
-
 (defn macroexpand-1 [form env]
-  (cond
-    (and (list? form) (custom-forms (first form)))
-    form
-
-    (and (list? form) (= (first form) 'var))
+  (if (and (list? form) (= (first form) 'var))
     (cons 'vari (rest form))
-
-    (and (list? form) (= (first form) 'defn))
-    (cons 'fn (rest form))
-
-    :else
     (ana.jvm/macroexpand-1 form env)))
 
 (defn classify-invoke
