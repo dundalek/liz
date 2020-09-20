@@ -61,12 +61,18 @@
     (doseq [[{:keys [name] :as test-case} result] tests]
       (run-test-case test-case result))))
 
+;; Clearing Zig cache because it grows indefinately in watch mode due to random file names and eventully exhausts disk space.
+(defn clear-cache []
+  (sh "rm" "-rf" "zig-cache"))
+
 (deftest docs-samples
+  (clear-cache)
   (run-test-cases
     (read-tests "test/resources/docs-samples.cljc")
     (read-tests "test/resources/docs-samples-output.txt")))
 
 (deftest features
+  (clear-cache)
   (run-test-cases
     (read-tests "test/resources/features.cljc")
     (read-tests "test/resources/features-output.txt")))
