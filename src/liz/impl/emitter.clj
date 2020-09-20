@@ -462,6 +462,9 @@
         (emits "inline ")
         (-emit (assoc (first args) :top-level top-level)))
 
+    (= (:form f) 'comment)
+    nil
+
     :else
     (do
       (-emit f)

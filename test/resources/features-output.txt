@@ -46,3 +46,16 @@ All 3 tests passed.
 32/33 test "Pointer dereference"...OK
 33/33 test "Address of"...OK
 All 33 tests passed.
+
+;; == test Comment form
+
+1/1 test "clj comment"...OK
+All 1 tests passed.
+
+;; == test Bit operators aliases
+
+1/4 test "bit-and"...OK
+2/4 test "bit-or"...OK
+3/4 test "bit-shift-left"...OK
+4/4 test "bit-shift-right"...OK
+All 4 tests passed.

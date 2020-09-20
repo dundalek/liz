@@ -176,3 +176,28 @@
 ;   (const A (error One))
 ;   (const B (error Two))
 ;   (assert (= (error One Two) (|| A B))))
+;; == test Comment form
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "clj comment"
+  (var ^i32 a 0)
+  (comment
+    (+= a 1)
+    (+= a 2))
+  (assert (= a 0)))
+;; == test Bit operators aliases
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "bit-and"
+  (assert (= 2r001 (bit-and 2r011 2r101))))
+
+(test "bit-or"
+  (assert (= 2r110 (bit-or 2r010 2r100))))
+
+(test "bit-shift-left"
+  (assert (= 256 (bit-shift-left 1 8))))
+
+(test "bit-shift-right"
+  (assert (= 5 (bit-shift-right 10 1))))

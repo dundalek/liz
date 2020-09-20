@@ -12,12 +12,28 @@
 (defmacro liz-defn [& body]
   (cons 'fn body))
 
+(defmacro liz-bit-and [& body]
+  (cons '& body))
+
+(defmacro liz-bit-or [& body]
+  (cons '| body))
+
+(defmacro liz-bit-shift-left [& body]
+  (cons '<< body))
+
+(defmacro liz-bit-shift-right [& body]
+  (cons '>> body))
+
 (defn build-ns-map []
   (let [mappings {'-> #'clojure.core/->
                   '->> #'clojure.core/->>
                   '= #'clojure.core/=
                   '.. #'clojure.core/..
                   'aset #'clojure.core/aset
+                  'bit-and #'liz-bit-and
+                  'bit-or #'liz-bit-or
+                  'bit-shift-left #'liz-bit-shift-left
+                  'bit-shift-right #'liz-bit-shift-right
                   'cond #'clojure.core/cond
                   'defn #'liz-defn
                   'deref #'clojure.core/deref
