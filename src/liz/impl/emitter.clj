@@ -399,6 +399,12 @@
     (#{'not 'clojure.core/not} (:form f))
     (emit-operator '! args expr)
 
+    (= (:form f) 'bit-xor)
+    (emit-operator "^" args expr)
+
+    (= (:form f) 'bit-not)
+    (emit-operator "~" args expr)
+
     (= (:form f) 'aget)
     (emit-aget expr)
 

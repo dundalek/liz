@@ -9,3 +9,40 @@ All 1 tests passed.
 2/3 test "when with multiple forms"...OK
 3/3 test "when-not"...OK
 All 3 tests passed.
+
+;; == test Operators
+
+1/33 test "Addition"...OK
+2/33 test "Wrapping Addition"...OK
+3/33 test "Subtraction"...OK
+4/33 test "Wrapping Subtraction"...OK
+5/33 test "Negation"...OK
+6/33 test "Wrapping Negation"...OK
+7/33 test "Multiplication"...OK
+8/33 test "Wrapping Multiplication"...OK
+9/33 test "Division"...OK
+10/33 test "Remainder Division"...OK
+11/33 test "Bit Shift Left"...OK
+12/33 test "Bit Shift Right"...OK
+13/33 test "Bitwise AND"...OK
+14/33 test "Bitwise OR"...OK
+15/33 test "Bitwise XOR"...OK
+16/33 test "Bitwise NOT"...OK
+17/33 test "Optionals unwrapping"...OK
+18/33 test "Optionals unwrapping shorthand"...OK
+19/33 test "Error Unions unwrapping"...OK
+20/33 test "Boolean AND"...OK
+21/33 test "Boolean OR"...OK
+22/33 test "Boolea NOT"...OK
+23/33 test "Equals"...OK
+24/33 test "Optionals nil equality"...OK
+25/33 test "Not equal"...OK
+26/33 test "Greater than"...OK
+27/33 test "Greater or eaqual than"...OK
+28/33 test "Less than"...OK
+29/33 test "Less or equal than"...OK
+30/33 test "Array concatenation"...OK
+31/33 test "Array multiplication"...OK
+32/33 test "Pointer dereference"...OK
+33/33 test "Address of"...OK
+All 33 tests passed.
