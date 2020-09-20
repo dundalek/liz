@@ -396,7 +396,7 @@
     (= (:form f) 'not=)
     (emit-operator '!= args expr)
 
-    (= (:form f) 'not)
+    (#{'not 'clojure.core/not} (:form f))
     (emit-operator '! args expr)
 
     (= (:form f) 'aget)

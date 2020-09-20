@@ -22,8 +22,10 @@
                   'defn #'liz-defn
                   'deref #'clojure.core/deref
                   'fn #'clojure.core/fn
+                  'if-not #'clojure.core/if-not
                   'int #'clojure.core/int
-                  'when #'clojure.core/when}]
+                  'when #'clojure.core/when
+                  'when-not #'clojure.core/when-not}]
     {'clojure.core
      {:mappings mappings
       :aliases {}
