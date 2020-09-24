@@ -33,7 +33,7 @@ All 3 tests passed.
 19/33 test "Error Unions unwrapping"...OK
 20/33 test "Boolean AND"...OK
 21/33 test "Boolean OR"...OK
-22/33 test "Boolea NOT"...OK
+22/33 test "Boolean NOT"...OK
 23/33 test "Equals"...OK
 24/33 test "Optionals nil equality"...OK
 25/33 test "Not equal"...OK
@@ -59,3 +59,10 @@ All 1 tests passed.
 3/4 test "bit-shift-left"...OK
 4/4 test "bit-shift-right"...OK
 All 4 tests passed.
+
+;; == test More bitwise operators
+
+1/3 test "test-bit-set"...OK
+2/3 test "test-bit-flip"...OK
+3/3 test "test-bit-test"...OK
+All 3 tests passed.

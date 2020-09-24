@@ -121,7 +121,7 @@
 (test "Boolean OR"
   (assert (= true (or false true))))
 
-(test "Boolea NOT"
+(test "Boolean NOT"
   (assert (= true (not false))))
 
 (test "Equals"
@@ -201,3 +201,24 @@
 
 (test "bit-shift-right"
   (assert (= 5 (bit-shift-right 10 1))))
+
+;; == test More bitwise operators
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+;; TODO
+; (test "test-bit-clear"
+;   (assert (= 2r1101 (bit-clear 2r1111 1)))
+;   (assert (= 2r1101 (bit-clear 2r1101 1))))
+
+(test "test-bit-set"
+  (assert (= 2r1111 (bit-set 2r1111 1)))
+  (assert (= 2r1111 (bit-set 2r1101 1))))
+
+(test "test-bit-flip"
+  (assert (= 2r1101 (bit-flip 2r1111 1)))
+  (assert (= 2r1111 (bit-flip 2r1101 1))))
+
+(test "test-bit-test"
+  (assert (= true (bit-test 2r1111 1)))
+  (assert (= false (bit-test 2r1101 1))))

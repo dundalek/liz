@@ -24,6 +24,19 @@
 (defmacro liz-bit-shift-right [& body]
   (cons '>> body))
 
+(defmacro liz-bit-flip [x n]
+  (list 'bit-xor x (list '<< 1 n)))
+
+;; TODO negation seems to require @as casting
+; (defmacro liz-bit-clear [x n]
+;   (list 'bit-and x (list 'bit-not (list '<< 1 n))))
+
+(defmacro liz-bit-set [x n]
+  (list 'bit-or x (list '<< 1 n)))
+
+(defmacro liz-bit-test [x n]
+  (list 'not= (list 'bit-and x (list '<< 1 n)) 0))
+
 (defn build-ns-map []
   (let [mappings {'-> #'clojure.core/->
                   '->> #'clojure.core/->>
@@ -31,9 +44,13 @@
                   '.. #'clojure.core/..
                   'aset #'clojure.core/aset
                   'bit-and #'liz-bit-and
+                  ; 'bit-clear #'liz-bit-clear
+                  'bit-flip #'liz-bit-flip
                   'bit-or #'liz-bit-or
+                  'bit-set #'liz-bit-set
                   'bit-shift-left #'liz-bit-shift-left
                   'bit-shift-right #'liz-bit-shift-right
+                  'bit-test #'liz-bit-test
                   'cond #'clojure.core/cond
                   'defn #'liz-defn
                   'deref #'clojure.core/deref
