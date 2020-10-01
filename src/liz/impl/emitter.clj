@@ -91,6 +91,10 @@
         quoted? (= (first s) \')]
     (emits (cond-> s quoted? (subs 1)))))
 
+(defmethod -emit :quote
+  [{:keys [expr]}]
+  (emits (:form expr)))
+
 (defmethod -emit :var
   [{:keys [form]}]
   (emits form))
@@ -580,5 +584,5 @@
 
 (defmethod -emit :default
   [expr]
-  (throw (ex-info ("Unhandled op for -emit: " (:op expr) "children:" (:children expr))
+  (throw (ex-info (str "Unhandled op for -emit: " (:op expr) " children: " (:children expr))
            {:node expr})))
