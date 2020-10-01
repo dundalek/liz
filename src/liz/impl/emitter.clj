@@ -1,6 +1,31 @@
 (ns liz.impl.emitter
   (:require [clojure.pprint :refer [pprint]]
-            [liz.lang :refer [binary-ops]]))
+            [liz.lang :refer [binary-ops]]
+            [clojure.tools.analyzer.utils :as ana.utils]))
+
+(defn assert-arg-count
+  ([{:keys [args env] :as ast} cnt]
+   (assert-arg-count args cnt (-> ast :fn :form) env))
+  ([args cnt form info]
+   (when (not= (count args) cnt)
+     (throw (ex-info (str "(" form ") was given " (count args) " arguments, but expects " cnt)
+                     (ana.utils/source-info info))))))
+
+(defn assert-gte-count
+  ([{:keys [args env] :as ast} cnt]
+   (assert-gte-count args cnt (-> ast :fn :form) env))
+  ([args cnt form info]
+   (when (< (count args) cnt)
+     (throw (ex-info (str "(" form ") was given " (count args) " arguments, but expects at least " cnt)
+                     (ana.utils/source-info info))))))
+
+(defn assert-lte-count
+  ([{:keys [args env] :as ast} cnt]
+   (assert-lte-count args cnt (-> ast :fn :form) env))
+  ([args cnt form info]
+   (when (> (count args) cnt)
+     (throw (ex-info (str "(" form ") was given " (count args) " arguments, but expects at most " cnt)
+                     (ana.utils/source-info info))))))
 
 (defn unwrap-meta [expr]
   (cond-> expr
@@ -76,7 +101,8 @@
 (defmethod -emit :statement
   [expr] (emit-statement expr))
 
-(defn emit-aget [{:keys [args top-level]}]
+(defn emit-aget [{:keys [args top-level env]}]
+  (assert-gte-count args 2 'aset env)
   (-emit (first args))
   (doseq [index (rest args)]
     (emits "[")
@@ -84,6 +110,18 @@
     (emits "]"))
   (when top-level
     (emits ";\n")))
+
+(defn emit-aset [{:keys [args top-level env]}]
+  ;; TODO support for multiple keys
+  (assert-gte-count args 3 'aset env)
+  (let [[target index val] args]
+     (-emit target)
+     (emits "[")
+     (-emit index)
+     (emits "] = ")
+     (-emit val)
+     (when top-level
+       (emits ";\n"))))
 
 (defmethod -emit :maybe-class
   [expr]
@@ -134,30 +172,20 @@
     (emits ";\n")))
 
 (defmethod -emit :host-call
-  [{:keys [method target args top-level] :as node}]
+  [{:keys [method target args top-level env] :as node}]
   (cond
     (=  method 'aget)
     (emit-aget node)
 
     (=  method 'aset)
-    (do (assert (= (count args) 3))
-        (let [[target index val] args]
-           (-emit target)
-           (emits "[")
-           (-emit index)
-           (emits "] = ")
-           (-emit val)
-           (when top-level
-             (emits ";\n"))))
+    (emit-aset node)
 
     (=  method 'equiv)
     (emit-operator '== args node)
 
     ;; for now no-op and rely on zig casting, maybe modify in future
     (= method 'intCast)
-    (do (when (not= (count args) 1)
-          (throw (ex-info (str "intCast has " (count args) " args in :op :host-call, expeced 1")
-                          {:node node})))
+    (do (assert-arg-count args 1 'intCast env)
         (-emit (first args)))
 
     :else (do (-emit target)
@@ -178,7 +206,7 @@
     (emits " }")))
 
 (defmethod -emit :map
-  [{:keys [keys vals meta]}]
+  [{:keys [keys vals meta env]}]
   (let [tag (-> meta :form :tag)]
     (if (empty? keys)
       (do
@@ -188,7 +216,9 @@
       (do (emits (or tag "."))
           (emits "{\n")
           (doseq [[k v] (map vector keys vals)]
-            (assert (= (:type k) :keyword))
+            (when (not= (:type k) :keyword)
+              (throw (ex-info (str "Key in {} map literal expected to be a keyword, but given `" (pr-str (:form k)) "` which is a " (cond-> (:type k) keyword? name))
+                              (ana.utils/source-info env))))
             (emits ".")
             (emits (name (:val k)))
             (emits " = ")
@@ -203,13 +233,12 @@
                      :top-level top-level)))
 
 (defmethod -emit :invoke
-  [{f :fn :keys [args top-level] :as expr}]
+  [{f :fn :keys [args top-level env] :as expr}]
   ;; TODO: perhaps move const into analysis pass
   (cond
     (#{'const 'vari} (:class f))
-    (do (assert (= (count args) 2))
-        (let [{:keys [op form]} (first args)
-              _ (assert (#{:var :maybe-class} op))
+    (do (assert-arg-count args 2 (:class f) env)
+        (let [{:keys [form]} (first args)
               {:keys [tag threadlocal comptime pub align]} (meta form)]
           (when pub
             (emits "pub "))
@@ -235,14 +264,15 @@
     (and (= (:op f) :var)
          (= (:form f) 'clojure.core/deref))
     (do
-      (assert (= (count args) 1))
+      (assert-arg-count expr 1)
       (emits "@")
       (-emit (first args)))
 
     (and (= (:op f) :maybe-class)
          (= (:class f) 'slice))
     (let [[target begin end] args]
-       (assert (and (< 1 (count args) 4)))
+       (assert-gte-count args 2 'slice env)
+       (assert-lte-count args 3 'slice env)
        (-emit target)
        (emits "[")
        (-emit begin)
@@ -412,6 +442,9 @@
     (= (:form f) 'aget)
     (emit-aget expr)
 
+    (= (:form f) 'aset)
+    (emit-aset expr)
+
     (= (:form f) 'zig*)
     (emits (:val (first args)))
 
@@ -462,7 +495,7 @@
             (emits ";\n"))))
 
     (= (:form f) 'inline)
-    (do (assert (= (count args) 1))
+    (do (assert-arg-count expr 1)
         (emits "inline ")
         (-emit (assoc (first args) :top-level top-level)))
 
@@ -562,7 +595,7 @@
     (emits ";\n")))
 
 (defmethod -emit :try
-  [{:keys [body catches top-level] :as node}]
+  [{:keys [body catches top-level env] :as node}]
   (case (count catches)
     0 (do (assert (= (:op body) :do))
           (assert (empty? (:statements body)))
@@ -579,8 +612,8 @@
           (-emit (-> (first catches) :body))
           (when top-level
             (emits ";\n")))
-    (throw (ex-info (str "Try/Catch allows max 1 catch clause. but " (count catches) " given")
-                    {:node node}))))
+    (throw (ex-info (str "try was given " (count catches) " catch clauses, but only 1 is supported")
+                    (ana.utils/source-info env)))))
 
 (defmethod -emit :default
   [expr]

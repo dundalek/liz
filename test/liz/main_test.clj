@@ -5,7 +5,7 @@
             [liz.impl.compiler :as compiler]
             [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]])
-  (:import (java.io File)))
+  (:import (java.io File StringWriter)))
 
 (defn with-temp-file [cb]
   (let [file (File/createTempFile "liz-test-" ".zig")
@@ -76,6 +76,17 @@
   (run-test-cases
     (read-tests "test/resources/features.cljc")
     (read-tests "test/resources/features-output.txt")))
+
+(deftest error-reporting
+  (let [out (StringWriter.)
+        err (StringWriter.)]
+    (binding [*out* out
+              *err* err]
+      (-> (slurp "test/resources/error-reporting-fixture.cljc")
+          (reader/read-all-string)
+          (compiler/compile)))
+    (is (= "" (str out)))
+    (is (= (slurp "test/resources/error-reporting-output.txt") (str err)))))
 
 ;;(defmacro define-test-cases [suite-name cases results]
 ;;  (let [tests (map vector (eval cases) (eval results))]

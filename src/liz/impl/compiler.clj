@@ -9,26 +9,32 @@
             [clojure.string :as str]
             [clojure.java.io :as io]))
 
-(defn compile [forms]
-  (env/ensure (ana/global-env)
-    (doseq [form forms]
-      ;; TODO One try/catch for analyzer and one for emitter
-      (try
-        (let [ast (ana/analyze form)]
-          #_(binding [*print-meta* true
-                      *out* *err*]
-              (pprint ast))
-          (emitter/emit ast))
-        (catch Exception e
-          (let [{:keys [node]} (ex-data e)]
-            (cond
-              node
-              (do (binding [*print-meta* true]
-                    (pprint node))
-                  (println (ex-message e)))
+(defn compile
+  ([forms] (compile forms "NO_SOURCE_PATH"))
+  ([forms file-name]
+   (env/ensure (ana/global-env)
+     (doseq [form forms]
+       ;; TODO One try/catch for analyzer and one for emitter
+       (try
+         (let [ast (ana/analyze form)]
+           #_(binding [*print-meta* true
+                       *out* *err*]
+               (pprint ast))
+           (emitter/emit ast))
+         (catch Exception e
+           (let [{:keys [node line column]} (ex-data e)]
+             (cond
+               node
+               (do (binding [*print-meta* true]
+                     (pprint node))
+                   (println (ex-message e)))
 
-              :else (binding [*out* *err*]
-                      (println "Unexpected error" e)))))))))
+               (and line column)
+               (binding [*out* *err*]
+                 (println (str file-name ":" line ":" column ": error:") (ex-message e)))
+
+               :else (binding [*out* *err*]
+                       (println "Unexpected error" e))))))))))
 
 (defn compile-file [file-in out-dir]
   (let [file-out (str out-dir "/" (str/replace file-in #"\.[^.]+$" ".zig"))]
@@ -36,7 +42,7 @@
       (binding [*out* writer]
         (-> (slurp file-in)
             (reader/read-all-string)
-            (compile))))
+            (compile file-in))))
 
     #_(with-open [rdr (rt/indexing-push-back-reader
                         (io/reader file-in))
@@ -51,10 +57,11 @@
         (println err)))))
 
 (comment
-  (let [form (first (reader/read-all-string "(const assert (.. (@import \"std\") -debug -assert))"))
+  (let [form (first (reader/read-all-string "(= ('when 1) 3)"))
         ast (env/ensure (ana/global-env)
               (ana/analyze form))]
     (binding [*print-meta* true]
               ;*print-level* 5]
+      (pprint form)
       (pprint ast))
    (emitter/emit ast)))

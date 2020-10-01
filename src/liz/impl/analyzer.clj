@@ -7,7 +7,8 @@
              [source-info :refer [source-info]]]
             [liz.impl.passes
              [classify-invoke :as classify-invoke]]
-            [clojure.tools.analyzer.jvm :as ana.jvm]))
+            [clojure.tools.analyzer.jvm :as ana.jvm]
+            [clojure.tools.analyzer.utils :as ana.utils]))
 
 (defmacro liz-defn [& body]
   (cons 'fn body))
@@ -78,7 +79,10 @@
 
 (defn macroexpand-1 [form env]
   (if (and (list? form) (= (first form) 'var))
-    (cons 'vari (rest form))
+    (if (not= (count form) 3)
+      (throw (ex-info (str "(var) was given " (dec (count form)) " arguments, but expects 2")
+                      (ana.utils/source-info (meta form))))
+      (with-meta (cons 'vari (rest form)) (meta form)))
     (ana.jvm/macroexpand-1 form env)))
 
 (def
