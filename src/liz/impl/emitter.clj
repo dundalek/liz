@@ -36,9 +36,8 @@
 (defn emit [ast]
   (-emit ast))
 
-(defn emits
-  ([a] (.write *out* (str a)))
-  ([a & xs] (emits a) (doseq [x xs] (emits x))))
+(defn emits [a]
+  (.write *out* (str a)))
 
 (defn emits-interposed
   ([sep coll] (emits-interposed sep coll -emit))
@@ -132,10 +131,6 @@
 (defmethod -emit :quote
   [{:keys [expr]}]
   (emits (:form expr)))
-
-(defmethod -emit :var
-  [{:keys [form]}]
-  (emits form))
 
 (defmethod -emit :const
   [{:keys [type val]}]
@@ -369,10 +364,6 @@
     (and (= (:op f) :maybe-class)
          (binary-ops (:class f)))
     (emit-operator (:class f) args expr)
-
-    (and (= (:op f) :var)
-         (binary-ops (:form f)))
-    (emit-operator (:form f) args expr)
 
     (or (= (:form f) 'while))
     (do (emits "while (")
