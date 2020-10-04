@@ -11,6 +11,11 @@
            {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}}
             :main-opts ["-m" "kaocha.runner"]}
 
+           :test-coverage
+           {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
+                         lambdaisland/kaocha-cloverage {:mvn/version "1.0.63"}}
+            :main-opts ["-m" "kaocha.runner" "--plugin" "cloverage"]}
+
            :depstar
            {:extra-deps {seancorfield/depstar {:mvn/version "1.1.104"}}
             :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}}
