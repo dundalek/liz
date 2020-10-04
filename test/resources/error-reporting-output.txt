@@ -1,5 +1,5 @@
 NO_SOURCE_PATH:1:1: error: (aset) was given 2 arguments, but expects at least 3
-NO_SOURCE_PATH:3:1: error: (aset) was given 1 arguments, but expects at least 2
+NO_SOURCE_PATH:3:1: error: (aget) was given 1 arguments, but expects at least 2
 NO_SOURCE_PATH:5:1: error: (var) was given 3 arguments, but expects 2
 NO_SOURCE_PATH:7:1: error: (inline) was given 2 arguments, but expects 1
 NO_SOURCE_PATH:9:1: error: (const) was given 1 arguments, but expects 2

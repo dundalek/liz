@@ -222,3 +222,18 @@
 (test "test-bit-test"
   (assert (= true (bit-test 2r1111 1)))
   (assert (= false (bit-test 2r1101 1))))
+
+;; == test array aset
+(const std (@import "std"))
+(const assert std.debug.assert)
+
+(test "using special form names"
+  (var arr ^"[2][2]u8"
+      [^"[2]u8" [0 0]
+       ^"[2]u8" [3 0]])
+
+  (assert (= 3 (aget arr 1 0)))
+
+  (aset arr 1 0 5)
+
+  (assert (= 5 (aget arr 1 0))))

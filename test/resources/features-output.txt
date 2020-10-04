@@ -66,3 +66,8 @@ All 4 tests passed.
 2/3 test "test-bit-flip"...OK
 3/3 test "test-bit-test"...OK
 All 3 tests passed.
+
+;; == test array aset
+
+1/1 test "using special form names"...OK
+All 1 tests passed.

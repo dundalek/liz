@@ -101,7 +101,7 @@
   [expr] (emit-statement expr))
 
 (defn emit-aget [{:keys [args top-level env]}]
-  (assert-gte-count args 2 'aset env)
+  (assert-gte-count args 2 'aget env)
   (-emit (first args))
   (doseq [index (rest args)]
     (emits "[")
@@ -111,13 +111,16 @@
     (emits ";\n")))
 
 (defn emit-aset [{:keys [args top-level env]}]
-  ;; TODO support for multiple keys
   (assert-gte-count args 3 'aset env)
-  (let [[target index val] args]
+  (let [target (first args)
+        indexes (-> args rest butlast)
+        val (last args)]
      (-emit target)
-     (emits "[")
-     (-emit index)
-     (emits "] = ")
+     (doseq [index indexes]
+       (emits "[")
+       (-emit index)
+       (emits "]"))
+     (emits " = ")
      (-emit val)
      (when top-level
        (emits ";\n"))))
