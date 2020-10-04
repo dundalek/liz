@@ -196,7 +196,7 @@
 
 ;; use compile-time code to initialize an array
 (var fancy_array
-  (label :init
+  (block :init
     (var ^"[10]Point" initial_value undefined)
     (for [[*pt, i] initial_value]
       (set! pt.* ^Point{:x (@intCast i32 i)
@@ -670,14 +670,14 @@
       (range 5 100) 1
 
       ;; Branches can be arbitrarily complex.
-      101 (label :blk
+      101 (block :blk
             (const ^u64 c 5)
             (break :blk (* c (+ 2 1))))
 
       ;; Switching on arbitrary expressions is allowed as long as the
       ;; expression is known at compile-time.
       zz zz
-      (comptime (label :blk
+      (comptime (block :blk
                   (const ^u32 d 5)
                   (const ^u32 e 100)
                   (break :blk (+ d e))))
@@ -733,7 +733,7 @@
       [Item.A Item.E] (bind item item)
 
       ;; A reference to the matched value can be obtained using `*` syntax.
-      Item.C (bind *item (label :blk
+      Item.C (bind *item (block :blk
                            (+= item.*.x  1)
                            (break :blk 6)))
       ;; No else is required if the types cases was exhaustively handled
@@ -809,14 +809,14 @@
 
 ;; == test Labeled while
 (test "nested break"
-  (label :outer
+  (block :outer
     (while true
       (while true
         (break :outer)))))
 
 (test "nested continue"
   (var ^usize i 0)
-  (label :outer
+  (block :outer
     (while-continue (< i 10) (+= i 1)
       (while true
         (continue :outer)))))
@@ -844,7 +844,7 @@
 (defn ^?u32 eventuallyNullSequence []
   (return (if (= numbers_left 0)
             null
-            (label :blk
+            (block :blk
               (-= numbers_left 1)
               (break :blk numbers_left)))))
 
@@ -865,7 +865,7 @@
 (defn ^anyerror!u32 eventuallyErrorSequence []
   (return (if (= numbers_left 0)
             error.ReachedZero
-            (label :blk
+            (block :blk
               (-= numbers_left 1)
               (break :blk numbers_left)))))
 
@@ -939,7 +939,7 @@
     (-> (for [value items]
           (when (not= value nil)
             (+= sum value.?)))
-        (else (label :blk
+        (else (block :blk
                 (assert (= sum 12))
                 (break :blk sum)))))
   (assert (= result 12)))
@@ -950,7 +950,7 @@
 
 (test "nested break"
   (var ^usize count 0)
-  (label :outer
+  (block :outer
     (for [_ ^"[_]i32" [1 2 3 4 5]]
       (for [_ ^"[_]i32" [1 2 3 4 5]]
         (+= count 1)
@@ -960,7 +960,7 @@
 
 (test "nested continue"
   (var ^usize count 0)
-  (label :outer
+  (block :outer
     (for [_ ^"[_]i32" [1 2 3 4 5 6 7 8]]
       (for [_ ^"[_]i32" [1 2 3 4 5]]
         (+= count 1)

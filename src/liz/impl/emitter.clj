@@ -410,7 +410,7 @@
       (cond
         (and (= (count args) 1)
              (= (-> args first :op) :invoke)
-             (= (-> args first :fn :form) 'label))
+             (= (-> args first :fn :form) 'block))
         (-emit (first args))
 
         (and (= (count args) 1)
@@ -474,7 +474,7 @@
           (emits ",\n"))
         (emits "}"))
 
-    (= (:form f) 'label)
+    (= (:form f) 'block)
     (do (assert (= (-> (first args) :type) :keyword))
         (emits (-> (first args) :val name))
         (emits ": ")
