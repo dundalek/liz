@@ -237,3 +237,16 @@
   (aset arr 1 0 5)
 
   (assert (= 5 (aget arr 1 0))))
+
+;; == test slice with sentinel
+(const assert (.. (@import "std") -debug -assert))
+(const mem (.. (@import "std") -mem))
+
+(test "slice with sentinel"
+  (var ^"[4]u8" buf undefined)
+  (aset buf 0 \h)
+  (aset buf 1 \i)
+  (aset buf 2 0)
+
+  (const ^"[:0]const u8" s (slice buf 0 2 0))
+  (assert (mem.eql u8 "hi" s)))

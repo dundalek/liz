@@ -268,15 +268,18 @@
 
     (and (= (:op f) :maybe-class)
          (= (:class f) 'slice))
-    (let [[target begin end] args]
+    (let [[target begin end sentinel] args]
        (assert-gte-count args 2 'slice env)
-       (assert-lte-count args 3 'slice env)
+       (assert-lte-count args 4 'slice env)
        (-emit target)
        (emits "[")
        (-emit begin)
        (emits "..")
        (when end
          (-emit end))
+       (when sentinel
+         (emits " :")
+         (-emit sentinel))
        (emits "]")
        (when top-level
          (emits ";\n")))

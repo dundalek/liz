@@ -13,4 +13,4 @@
        (catch _ _ y))
 
 (slice a)
-(slice a 1 2 3)
+(slice a 1 2 3 4)

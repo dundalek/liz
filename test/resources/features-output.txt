@@ -71,3 +71,8 @@ All 3 tests passed.
 
 1/1 test "using special form names"...OK
 All 1 tests passed.
+
+;; == test slice with sentinel
+
+1/1 test "slice with sentinel"...OK
+All 1 tests passed.

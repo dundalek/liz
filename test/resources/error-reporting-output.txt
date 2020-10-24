@@ -6,4 +6,4 @@ NO_SOURCE_PATH:9:1: error: (const) was given 1 arguments, but expects 2
 NO_SOURCE_PATH:10:1: error: (const) was given 3 arguments, but expects 2
 NO_SOURCE_PATH:12:1: error: try was given 2 catch clauses, but only 1 is supported
 NO_SOURCE_PATH:15:1: error: (slice) was given 1 arguments, but expects at least 2
-NO_SOURCE_PATH:16:1: error: (slice) was given 4 arguments, but expects at most 3
+NO_SOURCE_PATH:16:1: error: (slice) was given 5 arguments, but expects at most 4
