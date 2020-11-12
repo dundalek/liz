@@ -35,13 +35,14 @@
           (binding [*out* writer]
             (-> (reader/read-all-string content)
                 (compiler/compile))))
-        (is (= {:exit 0 :out "" :err (str out-file "\n")}
-               (sh "zig" "fmt" out-file)))
+        (is (= {:exit 0 :out (str out-file "\n") :err ""}
+               (sh "zig" "fmt" out-file))
+            "Formatter runs")
         (let [{:keys [exit out err]} (sh "zig" action out-file)]
-          (is (= name (:name result)))
-          (is (= exit 0))
-          (is (= (str/trim (str out "\n" err))
-                 (str/trim (:content result))))
+          (is (= (:name result) name))
+          (is (= 0 exit))
+          (is (= (str/trim (:content result))
+                 (str/trim (str out "\n" err))))
 
           (comment
             (println (str ";; == " action " " name))

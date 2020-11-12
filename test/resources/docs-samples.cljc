@@ -6,7 +6,7 @@
   (try (.print stdout "Hello, {}!\n" ["world"])))
 
 ;; == run hello_again
-(const print (.. (@import "std") -debug -warn))
+(const print (.. (@import "std") -debug -print))
 
 (defn ^:pub ^void main []
   (print "Hello, world!\n" []))
@@ -22,7 +22,7 @@
 
 ;; == run values
 ;; Top-level declarations are order-independent:
-(const print std.debug.warn)
+(const print std.debug.print)
 (const std (@import "std"))
 (const os std.os)
 (const assert std.debug.assert)
@@ -269,22 +269,22 @@
 (const assert std.debug.assert)
 
 (test "pointer casting"
-    (const ^{:align "@alignOf(u32)"} bytes ^"[_]u8" [0x12, 0x12, 0x12, 0x12])
-    (const u32_ptr (@ptrCast (zig* "*const u32") (& bytes)))
-    (assert (= u32_ptr.* 0x12121212))
+  (const ^{:align "@alignOf(u32)"} bytes ^"[_]u8" [0x12, 0x12, 0x12, 0x12])
+  (const u32_ptr (@ptrCast (zig* "*const u32") (& bytes)))
+  (assert (= u32_ptr.* 0x12121212))
 
-    ;; Even this example is contrived - there are better ways to do the above than
-    ;; pointer casting. For example, using a slice narrowing cast:
-    (const u32_value (-> (.bytesAsSlice std.mem u32 (slice bytes 0))
-                         (aget 0)))
-    (assert (= u32_value 0x12121212))
+  ;; Even this example is contrived - there are better ways to do the above than
+  ;; pointer casting. For example, using a slice narrowing cast:
+  (const u32_value (-> (.bytesAsSlice std.mem u32 (slice bytes 0))
+                       (aget 0)))
+  (assert (= u32_value 0x12121212))
 
-    ;; And even another way, the most straightforward way to do it:
-    (assert (= (@bitCast u32 bytes) 0x12121212)))
+  ;; And even another way, the most straightforward way to do it:
+  (assert (= (@bitCast u32 bytes) 0x12121212)))
 
 (test "pointer child type"
-    ;; pointer types have a `child` field which tells you the type they point to.
-    (assert (= (.-Child (zig* "(*u32)")) u32)))
+  ;; pointer types have a `child` field which tells you the type they point to.
+  (assert (= (.. (@typeInfo *u32) -Pointer -child) u32)))
 
 ;; == test structs.zig
 ;; Declare a struct.
@@ -420,9 +420,9 @@
 
 (defn ^:pub ^void main []
     (const Foo (struct))
-    (.warn std.debug "variable: {}\n", [(@typeName Foo)])
-    (.warn std.debug "anonymous: {}\n", [(@typeName (struct))])
-    (.warn std.debug "function: {}\n", [(@typeName (List i32))]))
+    (.print std.debug "variable: {}\n", [(@typeName Foo)])
+    (.print std.debug "anonymous: {}\n", [(@typeName (struct))])
+    (.print std.debug "function: {}\n", [(@typeName (List i32))]))
 
 (defn ^type List [^:comptime ^type T]
   (return (struct ^T x)))
@@ -1127,7 +1127,7 @@
 ;; == test defer
 (const std (@import "std"))
 (const assert std.debug.assert)
-(const print std.debug.warn)
+(const print std.debug.print)
 
 ;; defer will execute an expression at the end of the current scope.
 (defn ^usize deferExample []
@@ -1147,7 +1147,6 @@
 ;; If multiple defer statements are specified, they will be executed in
 ;; the reverse order they were run.
 (defn ^void deferUnwindExample []
-  (print "\n" [])
 
   (defer
      (print "1 " []))
@@ -1168,7 +1167,7 @@
 ;; This is especially useful in allowing a function to clean up properly
 ;; on error, and replaces goto error handling tactics as seen in c.
 (defn ^!void deferErrorExample [^bool is_error]
-  (print "\nstart of function\n" [])
+  (print "start of function\n" [])
 
   ;; This will always be executed on exit
   (defer
@@ -1390,7 +1389,7 @@
 (defn ^void amainWrap []
   (try (amain)
     (catch _ e
-      (.warn std.debug "{}\n" [e])
+      (.print std.debug "{}\n" [e])
       (if (@errorReturnTrace)
         (bind trace
           (.dumpStackTrace std.debug trace.*)))
@@ -1420,15 +1419,15 @@
   (const download_text (try (await download_frame)))
   (defer (.free allocator download_text))
 
-  (.warn std.debug "download_text: {}\n" [download_text])
-  (.warn std.debug "file_text: {}\n" [file_text]))
+  (.print std.debug "download_text: {}\n" [download_text])
+  (.print std.debug "file_text: {}\n" [file_text]))
 
 (var ^anyframe global_download_frame undefined)
 (defn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
   (const result (try (.dupe std.mem allocator u8 "this is the downloaded url contents")))
   (errdefer (.free allocator result))
   (suspend (set! global_download_frame (@frame)))
-  (.warn std.debug "fetchUrl returning\n" [])
+  (.print std.debug "fetchUrl returning\n" [])
   (return result))
 
 (var ^anyframe global_file_frame undefined)
@@ -1436,7 +1435,7 @@
   (const result (try (.dupe std.mem allocator u8 "this is the file contents")))
   (errdefer (.free allocator result))
   (suspend (set! global_file_frame (@frame)))
-  (.warn std.debug "readFile returning\n" [])
+  (.print std.debug "readFile returning\n" [])
   (return result))
 
 ;; == run Blocking Function Example
@@ -1449,7 +1448,7 @@
 (defn ^void amainWrap []
   (try (amain)
     (catch _ e
-      (.warn std.debug "{}\n" [e])
+      (.print std.debug "{}\n" [e])
       (if (@errorReturnTrace)
         (bind trace
           (.dumpStackTrace std.debug trace.*)))
@@ -1479,20 +1478,20 @@
   (const download_text (try (await download_frame)))
   (defer (.free allocator download_text))
 
-  (.warn std.debug "download_text: {}\n" [download_text])
-  (.warn std.debug "file_text: {}\n" [file_text]))
+  (.print std.debug "download_text: {}\n" [download_text])
+  (.print std.debug "file_text: {}\n" [file_text]))
 
 (defn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
   (const result (try (.dupe std.mem allocator u8 "this is the downloaded url contents")))
   (errdefer (.free allocator result))
-  (.warn std.debug "fetchUrl returning\n" [])
+  (.print std.debug "fetchUrl returning\n" [])
   (return result))
 
 (var ^anyframe global_file_frame undefined)
 (defn ^"![]u8" readFile [^*Allocator allocator ^"[]const u8" filename]
   (const result (try (.dupe std.mem allocator u8 "this is the file contents")))
   (errdefer (.free allocator result))
-  (.warn std.debug "readFile returning\n" [])
+  (.print std.debug "readFile returning\n" [])
   (return result))
 
 ;; == test Pointers allowzero
