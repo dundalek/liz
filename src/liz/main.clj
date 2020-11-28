@@ -17,8 +17,8 @@
 
 (defn error-msg [errors]
   (->> errors
-    (cons "The following errors occurred while parsing your command:\n\n")
-    (str/join \newline)))
+       (cons "The following errors occurred while parsing your command:\n\n")
+       (str/join \newline)))
 
 (def cli-options
   [["-h" "--help"]

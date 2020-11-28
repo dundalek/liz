@@ -1,6 +1,6 @@
 (ns liz.impl.emitter
   (:require [clojure.pprint :refer [pprint]]
-            [liz.lang :refer [binary-ops]]
+            [liz.impl.lang :refer [binary-ops]]
             [clojure.tools.analyzer.utils :as ana.utils]))
 
 (defn assert-arg-count
@@ -29,7 +29,7 @@
 
 (defn unwrap-meta [expr]
   (cond-> expr
-          (= (:op expr) :with-meta) :expr))
+    (= (:op expr) :with-meta) :expr))
 
 (defmulti -emit :op)
 
@@ -74,7 +74,7 @@
    (if (> (count forms) 1)
      (emit-block forms)
      (-emit (assoc (first forms) :top-level top-level
-                                 :in-statement true)))))
+                   :in-statement true)))))
 
 (defn emit-for [args]
   ;(pprint args)
@@ -115,15 +115,15 @@
   (let [target (first args)
         indexes (-> args rest butlast)
         val (last args)]
-     (-emit target)
-     (doseq [index indexes]
-       (emits "[")
-       (-emit index)
-       (emits "]"))
-     (emits " = ")
-     (-emit val)
-     (when top-level
-       (emits ";\n"))))
+    (-emit target)
+    (doseq [index indexes]
+      (emits "[")
+      (-emit index)
+      (emits "]"))
+    (emits " = ")
+    (-emit val)
+    (when top-level
+      (emits ";\n"))))
 
 (defmethod -emit :maybe-class
   [expr]
@@ -153,7 +153,7 @@
   (-emit target)
   (emits ".")
   (let [is-numeric-field (try (Integer/parseInt (name field))
-                           (catch Exception _))]
+                              (catch Exception _))]
     (if is-numeric-field
       (do (emits "@\"")
           (emits field)
@@ -227,8 +227,8 @@
 (defmethod -emit :with-meta
   [{:keys [expr meta raw-forms top-level]}]
   (-emit (assoc expr :meta meta
-                     :parent-raw-forms raw-forms
-                     :top-level top-level)))
+                :parent-raw-forms raw-forms
+                :top-level top-level)))
 
 (defmethod -emit :invoke
   [{f :fn :keys [args top-level env] :as expr}]
@@ -269,20 +269,20 @@
     (and (= (:op f) :maybe-class)
          (= (:class f) 'slice))
     (let [[target begin end sentinel] args]
-       (assert-gte-count args 2 'slice env)
-       (assert-lte-count args 4 'slice env)
-       (-emit target)
-       (emits "[")
-       (-emit begin)
-       (emits "..")
-       (when end
-         (-emit end))
-       (when sentinel
-         (emits " :")
-         (-emit sentinel))
-       (emits "]")
-       (when top-level
-         (emits ";\n")))
+      (assert-gte-count args 2 'slice env)
+      (assert-lte-count args 4 'slice env)
+      (-emit target)
+      (emits "[")
+      (-emit begin)
+      (emits "..")
+      (when end
+        (-emit end))
+      (when sentinel
+        (emits " :")
+        (-emit sentinel))
+      (emits "]")
+      (when top-level
+        (emits ";\n")))
 
     (= (:form f) 'struct)
     (do
@@ -394,7 +394,7 @@
         (-emit (assoc (second args) :top-level top-level)))
 
     (or (and (= (:op f) :var)
-         (= (:form f) 'for))
+             (= (:form f) 'for))
         (and (= (:op f) :maybe-class)
              (= (:class f) 'for)))
     (emit-for args)
@@ -530,14 +530,14 @@
     (let [{:keys [params body]} (first methods)]
       (emits "(")
       (emits-interposed ", " params
-        (fn [{:keys [op name]}]
-          (assert (= op :binding))
+                        (fn [{:keys [op name]}]
+                          (assert (= op :binding))
           ;; params is :op :binding but lets do it manually for now because :binding could have different meaning elsewhere
-          (when (-> name meta :comptime)
-            (emits "comptime "))
-          (emits name)
-          (emits ": ")
-          (emits (:tag (meta name)))))
+                          (when (-> name meta :comptime)
+                            (emits "comptime "))
+                          (emits name)
+                          (emits ": ")
+                          (emits (:tag (meta name)))))
       (emits ") ")
       (emits tag)
       ;; body is :op :do
@@ -567,7 +567,7 @@
       (-emit (assoc test :in-statement true)))
     (emits ") ")
     (-emit (assoc then
-             :top-level (and top-level (not has-else))))
+                  :top-level (and top-level (not has-else))))
     (when has-else
       (emits " else ")
       (-emit (assoc else :top-level top-level)))))
@@ -615,4 +615,4 @@
 (defmethod -emit :default
   [expr]
   (throw (ex-info (str "Unhandled op for -emit: " (:op expr) " children: " (:children expr))
-           {:node expr})))
+                  {:node expr})))

@@ -1,4 +1,4 @@
-(ns liz.lang)
+(ns liz.impl.lang)
 
 ;; set! .. =
 ;; not !

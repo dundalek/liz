@@ -111,6 +111,6 @@
              ana/create-var ana.jvm/create-var
              ana/parse ana/-parse
              ana/var? var?]
-     #_ ana.jvm/run-passes
+     #_ana.jvm/run-passes
      (-> (ana/analyze form env)
          (run-passes)))))

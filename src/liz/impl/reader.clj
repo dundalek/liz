@@ -12,7 +12,7 @@
 
 #_(defn read-all-string [s]
     (read-all (rt/indexing-push-back-reader
-                (rt/string-reader s))))
+               (rt/string-reader s))))
 
 (defn read-all-string [s]
   (edamame/parse-string-all s {:deref true

@@ -18,4 +18,10 @@
 
            :depstar
            {:extra-deps {seancorfield/depstar {:mvn/version "1.1.104"}}
-            :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}}}
+            :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
+
+           :lint {:extra-deps {cljfmt/cljfmt {:mvn/version "0.7.0"}}
+                  :main-opts ["-m" "cljfmt.main" "check"]}
+
+           :lint/fix {:extra-deps {cljfmt/cljfmt {:mvn/version "0.7.0"}}
+                      :main-opts ["-m" "cljfmt.main" "fix"]}}}

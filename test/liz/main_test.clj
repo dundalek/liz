@@ -69,14 +69,14 @@
 (deftest docs-samples
   (clear-cache)
   (run-test-cases
-    (read-tests "test/resources/docs-samples.liz")
-    (read-tests "test/resources/docs-samples-output.txt")))
+   (read-tests "test/resources/docs-samples.liz")
+   (read-tests "test/resources/docs-samples-output.txt")))
 
 (deftest features
   (clear-cache)
   (run-test-cases
-    (read-tests "test/resources/features.liz")
-    (read-tests "test/resources/features-output.txt")))
+   (read-tests "test/resources/features.liz")
+   (read-tests "test/resources/features-output.txt")))
 
 (deftest error-reporting
   (let [out (StringWriter.)
