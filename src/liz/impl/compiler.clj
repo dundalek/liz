@@ -37,7 +37,10 @@
                        (println "Unexpected error" e))))))))))
 
 (defn compile-file [file-in out-dir]
-  (let [file-out (str out-dir "/" (str/replace file-in #"\.[^.]+$" ".zig"))]
+  (let [file-out (str out-dir "/" (str/replace file-in #"\.[^.]+$" ".zig"))
+        parent (-> (io/file file-out) (.getParentFile))]
+    (when-not (.isDirectory parent)
+      (.mkdirs parent))
     (with-open [writer (io/writer file-out)]
       (binding [*out* writer]
         (-> (slurp file-in)
