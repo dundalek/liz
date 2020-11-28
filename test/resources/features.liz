@@ -1,4 +1,5 @@
 ;; == test using special form names
+;; -*- clojure -*-
 (const std (@import "std"))
 (const assert std.debug.assert)
 

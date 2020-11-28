@@ -69,13 +69,13 @@
 (deftest docs-samples
   (clear-cache)
   (run-test-cases
-    (read-tests "test/resources/docs-samples.cljc")
+    (read-tests "test/resources/docs-samples.liz")
     (read-tests "test/resources/docs-samples-output.txt")))
 
 (deftest features
   (clear-cache)
   (run-test-cases
-    (read-tests "test/resources/features.cljc")
+    (read-tests "test/resources/features.liz")
     (read-tests "test/resources/features-output.txt")))
 
 (deftest error-reporting
@@ -83,7 +83,7 @@
         err (StringWriter.)]
     (binding [*out* out
               *err* err]
-      (-> (slurp "test/resources/error-reporting-fixture.cljc")
+      (-> (slurp "test/resources/error-reporting-fixture.liz")
           (reader/read-all-string)
           (compiler/compile)))
     (is (= "" (str out)))

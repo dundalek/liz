@@ -1,4 +1,5 @@
 ;; == run hello
+;; -*- clojure -*-
 (const std (@import "std"))
 
 (defn ^:pub ^!void main []

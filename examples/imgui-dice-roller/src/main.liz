@@ -1,3 +1,5 @@
+;; -*- clojure -*-
+
 (const c (@import "c.zig"))
 (const std (@import "std"))
 (const panic (.. std -debug -panic))
