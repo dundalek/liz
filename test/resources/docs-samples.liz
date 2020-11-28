@@ -874,7 +874,7 @@
 (const expect (.. (@import "std") -testing -expect))
 
 (test "inline while loop"
-  (comptime (var i 0))
+  (var ^:comptime i 0)
   (var ^usize sum 0)
   (inline
     (while-continue (< i 3) (+= i 1)

@@ -410,19 +410,7 @@
     (do
       (emits (:form f))
       (emits " ")
-      (cond
-        (and (= (count args) 1)
-             (= (-> args first :op) :invoke)
-             (= (-> args first :fn :form) 'block))
-        (-emit (first args))
-
-        (and (= (count args) 1)
-             (= (-> args first :op) :invoke)
-             (= (-> args first :fn :form) 'assert))
-        (emit-block args)
-
-        :else
-        (maybe-emit-block args top-level)))
+      (emit-block args))
 
     (= (:form f) 'not=)
     (emit-operator '!= args expr)
