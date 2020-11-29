@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+set -xeuo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
+
+curl https://ziglang.org/download/0.7.0/zig-linux-x86_64-0.7.0.tar.xz -O
+tar xf zig-linux-x86_64-0.7.0.tar.xz
+export PATH="zig-linux-x86_64-0.7.0:$PATH"
+
+clojure -Mtest
