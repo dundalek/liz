@@ -11,18 +11,18 @@ Borrowing Zig's tagline:
 Why is Zig an interesting choice as a lower-level language for Clojure programmers? (compared to Rust or other languages):
 
 - Focus on simplicity
-- Seamless interop with C without the need to write bindings.
-Similar quality like Clojure seamlessly interoperating with Java.
-- Incremental compilation with the Zig self-hosted compiler.
+- Seamless interop with C without the need to write bindings.  
+  Similar quality like Clojure seamlessly interoperating with Java.
+- Incremental compilation with the Zig self-hosted compiler.  
   To accomplish this Zig uses a Global Offset Table for all function calls which is similar to Clojure Vars. Therefore it will be likely possible to implement a true REPL.
-- Decomplecting principles
+- Decomplecting principles  
   Most higher-level languages have bundled memory management, which disqualifies them from certain use cases. Zig decomplects memory management by introducing explicit Allocator interface, programmer can choose fitting memory management mechanism with regard to performance/convenience trade-offs.
 
 **Status:** *Highly experimental.*
 
 ## Examples
 
-Hellow World:
+Hello World:
 
 ```clojure
 ;; hello.liz
@@ -32,13 +32,20 @@ Hellow World:
   (print "Hello, world!\n" []))
 ```
 
-Will be translated into:
+It will get translated into:
 
 ```zig
-const print = @import("std").debug.warn;
+const print = @import("std").debug.print;
 pub fn main() void {
     print("Hello, world!\n", .{});
 }
+```
+
+Run with:
+
+```
+$ liz hello.liz && zig run hello.zig
+Hello, world!
 ```
 
 See [guess number program](./examples/guess_number/main.liz) for a longer example and the [examples](./examples) directory for more.
@@ -46,7 +53,7 @@ See [guess number program](./examples/guess_number/main.liz) for a longer exampl
 
 ## Documentation
 
-Read the work in progress [language guide](./doc/guide.md).
+Read the work in progress [language guide](./doc/guide.md).  
 To see how a form is used you can also take a look at [samples](./test/resources/docs-samples.liz) adapted from Zig docs.
 
 ## Usage
@@ -57,12 +64,12 @@ liz file1.liz file2.liz
 # file1.zig and file2.zig will be created
 ```
 
-Alternatively you can use use the JAR:
+Alternatively you can use the JAR:
 ```
 java -jar liz.jar file1.liz file2.liz
 ```
 
-Or use Clojure CLI:
+Or use Clojure CLI (inside the repo directory):
 
 ```sh
 clojure -m liz.main file1.liz file2.liz
@@ -78,7 +85,7 @@ Use `.liz` file extension. It works pretty well to use Clojure syntax highlighti
 
 ## Design principles
 
-- Create 1:1 mapping, everything expressible in Zig should be expressible in Liz, otherwise it can be considered a bug.
+- Create 1:1 mapping, everything expressible in Zig should be expressible in Liz, or can be considered a bug.
 - If a Zig feature maps cleanly to Clojure then use the Clojure variant and name.
 - If the mapping conflicts then use the Zig vocabulary.
 
