@@ -1,0 +1,98 @@
+# Clojure CircleCI 2.0 configuration file
+#
+version: 2
+jobs:
+
+  lint:
+    docker:
+      - image: circleci/clojure:openjdk-11-tools-deps-1.10.1.697-node
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache: # restores saved cache if checksum hasn't changed since the last run
+          key: clj-dependencies-{{ checksum "deps.edn" }}
+
+      - run: clojure -Mlint
+
+      - save_cache: # generate and store cache in the .m2 directory using a key template
+          paths:
+            - ~/.m2
+            - ~/.gitlibs
+          key: clj-dependencies-{{ checksum "deps.edn" }}
+
+  test-linux-jdk8:
+    docker:
+      - image: circleci/clojure:openjdk-8-tools-deps-1.10.1.697-node
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache: # restores saved cache if checksum hasn't changed since the last run
+          key: clj-dependencies-{{ checksum "deps.edn" }}
+
+      # run tests
+      - run: clojure -Mtest
+
+      - save_cache: # generate and store cache in the .m2 directory using a key template
+          paths:
+            - ~/.m2
+            - ~/.gitlibs
+          key: clj-dependencies-{{ checksum "deps.edn" }}
+
+  test-linux-jdk11:
+    docker:
+      - image: circleci/clojure:openjdk-11-tools-deps-1.10.1.697-node
+
+    working_directory: ~/repo
+
+    steps:
+      - checkout
+
+      - restore_cache: # restores saved cache if checksum hasn't changed since the last run
+          key: clj-dependencies-{{ checksum "deps.edn" }}
+
+      # run tests
+      - run: clojure -Mtest
+
+      - save_cache: # generate and store cache in the .m2 directory using a key template
+          paths:
+            - ~/.m2
+            - ~/.gitlibs
+          key: clj-dependencies-{{ checksum "deps.edn" }}
+
+  test-macos:
+    macos:
+      xcode: "11.3.1"
+
+    working_directory: /Users/distiller/project
+
+    steps:
+      - checkout
+
+      # Download and cache dependencies
+      - restore_cache:
+          keys:
+          - clj-dependencies-macos-{{ checksum "deps.edn" }}
+
+      # run tests
+      - run: clojure -Mtest
+
+      - save_cache:
+          paths:
+            - ~/.m2
+            - ~/.gitlibs
+          key: clj-dependencies-macos-{{ checksum "deps.edn" }}
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - lint
+      - test-linux-jdk8
+      - test-linux-jdk11
+      - test-macos
