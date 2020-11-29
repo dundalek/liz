@@ -84,6 +84,8 @@ Use `.liz` file extension. It works pretty well to use Clojure syntax highlighti
 
 ## License
 
+MIT
+
 ## TODOs
 
 - [ ] analyzer improvements
