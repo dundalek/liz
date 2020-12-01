@@ -1,14 +1,14 @@
 
 # Liz: Lisp-flavored general-purpose programming language (based on Zig)
 
-Borrowing Zig's tagline:
+Borrowing [Zig](https://github.com/ziglang/zig)'s tagline:
 > General-purpose programming language and toolchain for maintaining robust, optimal, and reusable software.
 
-- Written as Clojure-looking S-expressions (EDN) and translated to Zig code.
+- Written as Clojure-looking S-expressions ([EDN](https://github.com/edn-format/edn)) and translated to Zig code.
 - [Type-A](https://github.com/dundalek/awesome-lisp-languages#classification) Lisp-flavored language. I call it "Lisp-flavored" because Liz is missing many fundamental features to be called a Lisp or even a Clojure dialect.
 - When you need a language closer to the metal and Clojure with GraalVM's native image is still too much overhead.
 
-Why is Zig an interesting choice as a lower-level language for Clojure programmers? (compared to Rust or other languages):
+Why is Zig an interesting choice as a lower-level language for Clojure programmers? (compared to Rust, Go or other languages):
 
 - Focus on simplicity
 - Seamless interop with C without the need to write bindings.  
@@ -58,7 +58,17 @@ To see how a form is used you can also take a look at [samples](./test/resources
 
 ## Usage
 
-Download [Liz binary](https://github.com/dundalek/liz/releases) and [Zig 0.7.0](https://ziglang.org/download/#release-0.7.0). To compile files from Liz to Zig pass them as parameters:
+Not released yet. Build from source:
+```sh
+git clone https://github.com/dundalek/liz.git
+cd liz
+scripts/build-jar
+# or
+export GRAALVM_HOME=/your/path/to/graal
+scripts/build-native
+```
+
+Download [Zig 0.7.0](https://ziglang.org/download/#release-0.7.0). To compile files from Liz to Zig pass them as parameters:
 ```sh
 liz file1.liz file2.liz
 # file1.zig and file2.zig will be created
