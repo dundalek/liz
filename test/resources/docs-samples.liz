@@ -780,13 +780,13 @@
 
 (test "while loop continue expression"
   (var ^usize i 0)
-  (while-continue (< i 10) (+= i 1))
+  (while-step (< i 10) (+= i 1))
   (expect (= i 10)))
 
 (test "while loop continue expression, more complicated"
   (var ^usize i 1)
   (var ^usize j 1)
-  (while-continue (< (* i j) 2000)
+  (while-step (< (* i j) 2000)
                   (do (*= i 2) (*= j 3))
     (const my_ij (* i j))
     (expect (< my_ij 2000))))
@@ -801,7 +801,7 @@
 (defn ^bool rangeHasNumber [^usize begin ^usize end ^usize number]
   (var i begin)
   (return
-    (else (while-continue
+    (else (while-step
            (< i end)
            (+= i 1)
            (when (= i number)
@@ -818,7 +818,7 @@
 (test "nested continue"
   (var ^usize i 0)
   (block :outer
-    (while-continue (< i 10) (+= i 1)
+    (while-step (< i 10) (+= i 1)
       (while true
         (continue :outer)))))
 
@@ -877,7 +877,7 @@
   (var ^:comptime i 0)
   (var ^usize sum 0)
   (inline
-    (while-continue (< i 3) (+= i 1)
+    (while-step (< i 3) (+= i 1)
       (const T (case i
                  0 f32
                  1 i8

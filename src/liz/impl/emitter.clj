@@ -379,7 +379,7 @@
           (emits "{}")
           (maybe-emit-block (rest args) top-level)))
 
-    (or (= (:form f) 'while-continue))
+    (or (= (:form f) 'while-step))
     (do (emits "while (")
         (-emit (assoc (first args) :in-statement true))
         (emits ") : (")
