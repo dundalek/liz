@@ -2,17 +2,30 @@
 
 set -euo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-NATIVE_IMAGE="$GRAALVM_HOME/bin/native-image"
+NATIVE_IMAGE=`which native-image` || true
 
 if [ -z "$NATIVE_IMAGE" ]; then
-    echo 'Please set $NATIVE_IMAGE'
-    exit 1
+  if [ -z "$GRAALVM_HOME" ]; then
+      echo "Please set GRAALVM_HOME"
+      exit 1
+  fi
+
+  NATIVE_IMAGE="$GRAALVM_HOME/bin/native-image"
+
+  if [ ! -x "$NATIVE_IMAGE" ]; then
+    "$GRAALVM_HOME/bin/gu" install native-image || true
+  fi
 fi
 
-scripts/build-jar
+if [ -z "${1-}" ]; then
+  jar="target/liz.jar"
+  scripts/build-jar
+else
+  jar="$1"
+fi
 
 $NATIVE_IMAGE \
-    -jar target/liz.jar \
+    -jar "$jar" \
     -H:Name=liz \
     -H:+ReportExceptionStackTraces \
     --initialize-at-build-time  \

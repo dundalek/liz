@@ -1,0 +1,207 @@
+name: build
+
+env:
+  GRAAL_VERSION: "20.1.0.java11"
+  TOOLS_CLI_VERSION: "1.10.1.716" # or "latest"
+# on:
+#   push:
+#     tags:
+#       - "*.*.*"
+on: [push, pull_request]
+
+jobs:
+  build-jar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/deps.edn') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+      - uses: actions/cache@v1
+        with:
+          path: ~/.gitlibs
+          key: ${{ runner.os }}-deps-${{ hashFiles('**/deps.edn') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+
+      - name: Parse Ref
+        id: parse-ref
+        run: |
+          echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+
+      - name: Setup Clojure (https://github.com/marketplace/actions/setup-clojure)
+        uses: DeLaGuardo/setup-clojure@3.0
+        with:
+          tools-deps: ${{ env.TOOLS_CLI_VERSION }}
+
+      - name: Check clojure version
+        run: clojure -Sdescribe
+
+      - name: Build into uberjar
+        run: scripts/build-jar
+
+      - uses: actions/upload-artifact@v1
+        with:
+          path: target/liz.jar
+          name: liz-jar
+
+  # Use GraalVM on macOS to convert JAR to a native macOS binary
+  native-image-macos:
+    needs: [build-jar]
+    runs-on: macOS-latest
+    steps:
+      - name: Parse Ref
+        id: parse-ref
+        run: |
+          echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+
+      # === used for running tests, maybe extract into separate job
+
+      - uses: actions/cache@v1
+        with:
+          path: /Users/runner/hostedtoolcache/GraalVM
+          key: ${{ runner.os }}-graal-${{ env.GRAAL_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-graal-
+
+      - name: Setup Clojure (https://github.com/marketplace/actions/setup-clojure)
+        uses: DeLaGuardo/setup-clojure@3.0
+        with:
+          tools-deps: ${{ env.TOOLS_CLI_VERSION }}
+
+      - name: Check clojure version
+        run: clojure -Sdescribe
+
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      # ===
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: liz-jar
+          path: .
+
+      - name: Prepare GraalVM
+        uses: DeLaGuardo/setup-graalvm@3.0
+        with:
+          graalvm-version: ${{ env.GRAAL_VERSION }}
+
+      - name: Install native-image
+        run: gu install native-image
+
+      - run: |
+          which native-image
+
+      - name: Build macOS native image
+        run: scripts/build-native liz.jar
+
+      - uses: actions/upload-artifact@v1
+        with:
+          path: target/liz
+          name: liz-macos
+
+  native-image-linux:
+    needs: [build-jar]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Parse Ref
+        id: parse-ref
+        run: |
+          echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+
+      # === used for running tests, maybe extract into separate job
+
+      - uses: actions/cache@v1
+        with:
+          path: /opt/hostedtoolcache/GraalVM
+          key: ${{ runner.os }}-graal-${{ env.GRAAL_VERSION }}
+          restore-keys: |
+            ${{ runner.os }}-graal-
+
+      - name: Setup Clojure (https://github.com/marketplace/actions/setup-clojure)
+        uses: DeLaGuardo/setup-clojure@3.0
+        with:
+          tools-deps: ${{ env.TOOLS_CLI_VERSION }}
+
+      - name: Check clojure version
+        run: clojure -Sdescribe
+
+      - name: Git checkout
+        uses: actions/checkout@v1
+        with:
+          fetch-depth: 1
+
+      # ===
+
+      - uses: actions/download-artifact@v1
+        with:
+          name: liz-jar
+          path: .
+
+      - name: Prepare GraalVM
+        uses: DeLaGuardo/setup-graalvm@3.0
+        with:
+          graalvm-version: ${{ env.GRAAL_VERSION }}
+
+      - name: Install native-image
+        run: gu install native-image
+
+      - run: |
+          which native-image
+
+      - name: Build Linux native image
+        run: scripts/build-native liz.jar
+
+      - uses: actions/upload-artifact@v1
+        with:
+          path: target/liz
+          name: liz-linux
+
+  # Collate artifacts, upload to GitHub Releases on semver tags
+
+  # releaser:
+  #   needs: [native-image-mac]
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - name: Parse Ref
+  #       id: parse-ref
+  #       run: |
+  #         echo ::set-output name=version::${GITHUB_REF#refs/tags/}
+
+  #     - uses: actions/download-artifact@v1
+  #       with:
+  #         name: closh-zero-sci
+  #         path: .
+
+  #     - name: Create Release
+  #       id: create-release
+  #       uses: actions/create-release@v1.0.0
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         tag_name: ${{ github.ref }}
+  #         release_name: ${{ github.ref }}
+  #         draft: false
+  #         prerelease: false
+
+  #     - name: Upload Release Asset
+  #       id: upload-release-asset
+  #       uses: actions/upload-release-asset@v1.0.1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ steps.create-release.outputs.upload_url }}
+  #         asset_path: ./closh-zero-sci.tgz
+  #         asset_name: closh-zero-sci.tgz
+  #         asset_content_type: application/tar+gzip
