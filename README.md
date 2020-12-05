@@ -48,6 +48,21 @@ $ liz hello.liz && zig run hello.zig
 Hello, world!
 ```
 
+FizzBuzz example:
+
+```clojure
+(const print (.. (@import "std") -debug -print))
+
+(defn ^:pub ^void main []
+  (var ^usize i 1)
+  (while-step (<= i 100) (inc! i)
+    (cond
+      (zero? (mod i 15)) (print "FizzBuzz\n" [])
+      (zero? (mod i 3)) (print "Fizz\n" [])
+      (zero? (mod i 5)) (print "Buzz\n" [])
+      :else (print "{}\n" [i]))))
+```
+
 See [guess number program](./examples/guess_number/main.liz) for a longer example and the [examples](./examples) directory for more.
 
 
