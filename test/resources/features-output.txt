@@ -69,9 +69,18 @@ All 3 tests passed.
 
 ;; == test Operator aliases
 
-1/2 test "mod"... OK
-2/2 test "zero?"... OK
-All 2 tests passed.
+1/11 test "mod"... OK
+2/11 test "rem"... OK
+3/11 test "zero?"... OK
+4/11 test "inc"... OK
+5/11 test "inc!"... OK
+6/11 test "dec"... OK
+7/11 test "dec!"... OK
+8/11 test "pos?"... OK
+9/11 test "neg?"... OK
+10/11 test "even?"... OK
+11/11 test "odd?"... OK
+All 11 tests passed.
 
 ;; == test array aset
 

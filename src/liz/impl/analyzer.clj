@@ -27,12 +27,21 @@
                   'bit-shift-right #'core/bit-shift-right
                   'bit-test #'core/bit-test
                   'cond #'clojure.core/cond
+                  'dec #'core/dec
+                  'dec! #'core/dec!
                   'defn #'core/defn
                   'deref #'clojure.core/deref
+                  'even? #'core/even?
                   'fn #'clojure.core/fn
                   'if-not #'clojure.core/if-not
+                  'inc #'core/inc
+                  'inc! #'core/inc!
                   'int #'clojure.core/int
                   'mod #'core/mod
+                  'neg? #'core/neg?
+                  'odd? #'core/odd?
+                  'pos? #'core/pos?
+                  'rem #'core/rem
                   'when #'clojure.core/when
                   'when-not #'clojure.core/when-not
                   'while-some #'core/while-some

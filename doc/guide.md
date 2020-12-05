@@ -146,12 +146,22 @@ set!
   /
   +=
   mod
+  rem
+  inc
+  inc!
+  dec
+  dec!
+
 
 #### comparison operators
 
 =
 not=
 zero?
+pos?
+neg?
+even?
+odd?
 
 #### logical and bitwise operators
 

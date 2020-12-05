@@ -1,5 +1,5 @@
 (ns liz.core
-  (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test defn mod zero?]))
+  (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test dec defn inc mod zero? pos? neg? even? odd? rem]))
 
 (defmacro defn [& body]
   (cons 'fn body))
@@ -36,8 +36,35 @@
         (cons 'bind
               (cons (bindings 0) body))))
 
-(defmacro zero? [x]
-  (list '= x 0))
+(defmacro zero? [num]
+  (list '= num 0))
+
+(defmacro pos? [num]
+  (list '< 0 num))
+
+(defmacro neg? [num]
+  (list '< num 0))
+
+(defmacro even? [n]
+  (list '= 0 (list 'mod n 2)))
+
+(defmacro odd? [n]
+  (list '= 1 (list 'mod n 2)))
 
 (defmacro mod [num div]
   (list '% num div))
+
+(defmacro rem [num div]
+  (list (symbol "@rem") num div))
+
+(defmacro inc [x]
+  (list '+ x 1))
+
+(defmacro inc! [x]
+  (list '+= x 1))
+
+(defmacro dec [x]
+  (list '- x 1))
+
+(defmacro dec! [n]
+  (list '-= n 1))

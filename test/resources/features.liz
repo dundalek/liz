@@ -228,8 +228,12 @@
 (const expect (.. (@import "std") -testing -expect))
 
 (test "mod"
-  (expect (= (mod 15 5) 0))
-  (expect (= (mod 7 2) 1)))
+  (expect (= 0 (mod 15 5)))
+  (expect (= 1 (mod 7 2)))
+  (expect (= 1 (mod 10 3))))
+
+(test "rem"
+  (expect (= -1 (rem -10 3))))
 
 (test "zero?"
   (expect (zero? 0))
@@ -237,6 +241,50 @@
   (expect (= true (zero? 0)))
   (expect (not (zero? 5)))
   (expect (= false (zero? 5))))
+
+(test "inc"
+  (expect (= 1 (inc 0)))
+  (const ^usize i 1)
+  (expect (= 2 (inc i))))
+
+(test "inc!"
+  (var ^usize i 0)
+  (inc! i)
+  (inc! i)
+  (expect (= i 2)))
+
+(test "dec"
+  (expect (= -1 (dec 0)))
+  (const ^usize i 2)
+  (expect (= 1 (dec i))))
+
+(test "dec!"
+  (var ^usize i 2)
+  (dec! i)
+  (dec! i)
+  (expect (= i 0)))
+
+(test "pos?"
+  (expect (pos? 1))
+  (expect (pos? 0.1))
+  (expect (not (pos? 0)))
+  (expect (not (pos? -1)))
+  (expect (not (pos? -0.1))))
+
+(test "neg?"
+  (expect (neg? -1))
+  (expect (neg? -0.1))
+  (expect (not (neg? 0)))
+  (expect (not (neg? 1)))
+  (expect (not (neg? 0.1))))
+
+(test "even?"
+  (expect (even? 2))
+  (expect (not (even? 1))))
+
+(test "odd?"
+  (expect (odd? 1))
+  (expect (not (odd? 2))))
 
 ;; == test array aset
 (const std (@import "std"))
