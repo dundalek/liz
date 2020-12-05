@@ -787,7 +787,7 @@
   (var ^usize i 1)
   (var ^usize j 1)
   (while-step (< (* i j) 2000)
-                  (do (*= i 2) (*= j 3))
+              (do (*= i 2) (*= j 3))
     (const my_ij (* i j))
     (expect (< my_ij 2000))))
 

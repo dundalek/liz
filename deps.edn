@@ -21,6 +21,8 @@
             :jvm-opts ["-Dclojure.compiler.direct-linking=true"]}
 
            :lint {:extra-deps {cljfmt/cljfmt {:mvn/version "0.7.0"}}
+                  ;; Running cljfmt on Liz files in test folder unfortunately hangs
+                  ;; "--file-pattern" "\\.(clj[csx]?|liz)$" "--indents" ".cljfmt-indents.edn"
                   :main-opts ["-m" "cljfmt.main" "check"]}
 
            :lint/fix {:extra-deps {cljfmt/cljfmt {:mvn/version "0.7.0"}}

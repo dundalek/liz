@@ -292,8 +292,8 @@
 
 (test "using special form names"
   (var arr ^"[2][2]u8"
-      [^"[2]u8" [0 0]
-       ^"[2]u8" [3 0]])
+       [^"[2]u8" [0 0]
+        ^"[2]u8" [3 0]])
 
   (expect (= 3 (aget arr 1 0)))
 
