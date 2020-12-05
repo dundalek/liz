@@ -224,6 +224,20 @@
   (expect (= true (bit-test 2r1111 1)))
   (expect (= false (bit-test 2r1101 1))))
 
+;; == test Operator aliases
+(const expect (.. (@import "std") -testing -expect))
+
+(test "mod"
+  (expect (= (mod 15 5) 0))
+  (expect (= (mod 7 2) 1)))
+
+(test "zero?"
+  (expect (zero? 0))
+  (expect (zero? (- 2 2)))
+  (expect (= true (zero? 0)))
+  (expect (not (zero? 5)))
+  (expect (= false (zero? 5))))
+
 ;; == test array aset
 (const std (@import "std"))
 (const expect std.testing.expect)
@@ -251,3 +265,18 @@
 
   (const ^"[:0]const u8" s (slice buf 0 2 0))
   (expect (mem.eql u8 "hi" s)))
+
+;; == test while-some
+(const expect (.. (@import "std") -testing -expect))
+
+(test "while-some"
+  (var ^?usize optional_i 2)
+  (var ^usize cnt 0)
+
+  (while-some [i optional_i]
+    (+= cnt (* i 2))
+    (if (< 1 i)
+      (set! optional_i (- i 1))
+      (set! optional_i nil)))
+
+  (expect (= cnt 6)))

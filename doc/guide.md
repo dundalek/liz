@@ -145,12 +145,13 @@ set!
   +
   /
   +=
+  mod
 
 #### comparison operators
 
 =
 not=
-
+zero?
 
 #### logical and bitwise operators
 
@@ -219,9 +220,9 @@ continue
 unreachable
 else
 
-while-continue
+while-some
 
-consider while-let
+while-continue
 
 for / doseq
 

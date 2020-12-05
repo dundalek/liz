@@ -3,4 +3,4 @@
 set -euo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 clojure -Spom
-clojure -A:depstar -m hf.depstar.uberjar -v target/liz.jar -C -m liz.main
+clojure -M:depstar -m hf.depstar.uberjar -v target/liz.jar -C -m liz.main

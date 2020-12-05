@@ -5,61 +5,38 @@
             [clojure.tools.analyzer.passes :as ana.passes]
             [clojure.tools.analyzer.passes
              [source-info :refer [source-info]]]
+            [liz.core :as core]
             [liz.impl.passes
              [classify-invoke :as classify-invoke]]
             [clojure.tools.analyzer.jvm :as ana.jvm]
             [clojure.tools.analyzer.utils :as ana.utils]))
 
-(defmacro liz-defn [& body]
-  (cons 'fn body))
-
-(defmacro liz-bit-and [& body]
-  (cons '& body))
-
-(defmacro liz-bit-or [& body]
-  (cons '| body))
-
-(defmacro liz-bit-shift-left [& body]
-  (cons '<< body))
-
-(defmacro liz-bit-shift-right [& body]
-  (cons '>> body))
-
-(defmacro liz-bit-flip [x n]
-  (list 'bit-xor x (list '<< 1 n)))
-
-;; TODO negation seems to require @as casting
-; (defmacro liz-bit-clear [x n]
-;   (list 'bit-and x (list 'bit-not (list '<< 1 n))))
-
-(defmacro liz-bit-set [x n]
-  (list 'bit-or x (list '<< 1 n)))
-
-(defmacro liz-bit-test [x n]
-  (list 'not= (list 'bit-and x (list '<< 1 n)) 0))
-
+;; Replacing (ana.jvm/build-ns-map)
 (defn build-ns-map []
   (let [mappings {'-> #'clojure.core/->
                   '->> #'clojure.core/->>
                   '= #'clojure.core/=
                   '.. #'clojure.core/..
                   'aset #'clojure.core/aset
-                  'bit-and #'liz-bit-and
-                  ; 'bit-clear #'liz-bit-clear
-                  'bit-flip #'liz-bit-flip
-                  'bit-or #'liz-bit-or
-                  'bit-set #'liz-bit-set
-                  'bit-shift-left #'liz-bit-shift-left
-                  'bit-shift-right #'liz-bit-shift-right
-                  'bit-test #'liz-bit-test
+                  'bit-and #'core/bit-and
+                  ; 'bit-clear #'core/bit-clear
+                  'bit-flip #'core/bit-flip
+                  'bit-or #'core/bit-or
+                  'bit-set #'core/bit-set
+                  'bit-shift-left #'core/bit-shift-left
+                  'bit-shift-right #'core/bit-shift-right
+                  'bit-test #'core/bit-test
                   'cond #'clojure.core/cond
-                  'defn #'liz-defn
+                  'defn #'core/defn
                   'deref #'clojure.core/deref
                   'fn #'clojure.core/fn
                   'if-not #'clojure.core/if-not
                   'int #'clojure.core/int
+                  'mod #'core/mod
                   'when #'clojure.core/when
-                  'when-not #'clojure.core/when-not}]
+                  'when-not #'clojure.core/when-not
+                  'while-some #'core/while-some
+                  'zero? #'core/zero?}]
     {'clojure.core
      {:mappings mappings
       :aliases {}
@@ -67,10 +44,7 @@
      'user
      {:mappings mappings
       :aliases {}
-      :ns 'user}})
-  #_(-> (ana.jvm/build-ns-map)
-        (update-in ['clojure.core :mappings] dissoc 'while)
-        (update-in ['user :mappings] dissoc 'while)))
+      :ns 'user}}))
 
 (defn global-env []
   (atom {:namespaces (build-ns-map)

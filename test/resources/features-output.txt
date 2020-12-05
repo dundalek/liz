@@ -67,6 +67,12 @@ All 4 tests passed.
 3/3 test "test-bit-test"... OK
 All 3 tests passed.
 
+;; == test Operator aliases
+
+1/2 test "mod"... OK
+2/2 test "zero?"... OK
+All 2 tests passed.
+
 ;; == test array aset
 
 1/1 test "using special form names"... OK
@@ -75,4 +81,9 @@ All 1 tests passed.
 ;; == test slice with sentinel
 
 1/1 test "slice with sentinel"... OK
+All 1 tests passed.
+
+;; == test while-some
+
+1/1 test "while-some"... OK
 All 1 tests passed.
