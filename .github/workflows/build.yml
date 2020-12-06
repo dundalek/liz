@@ -48,10 +48,14 @@ jobs:
       - name: Build into uberjar
         run: scripts/build-jar
 
+      - name: Load the version into environment
+        run: |
+          echo "LIZ_VERSION=`cat resources/LIZ_VERSION`" >> $GITHUB_ENV
+
       - uses: actions/upload-artifact@v1
         with:
           path: target/liz.jar
-          name: liz-jar
+          name: liz-standalone-jar-${{ env.LIZ_VERSION }}
 
   # Use GraalVM on macOS to convert JAR to a native macOS binary
   native-image-macos:
@@ -87,9 +91,13 @@ jobs:
 
       # ===
 
+      - name: Load the version into environment
+        run: |
+          echo "LIZ_VERSION=`cat resources/LIZ_VERSION`" >> $GITHUB_ENV
+
       - uses: actions/download-artifact@v1
         with:
-          name: liz-jar
+          name: liz-standalone-jar-${{ env.LIZ_VERSION }}
           path: .
 
       - name: Prepare GraalVM
@@ -109,7 +117,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           path: target/liz
-          name: liz-macos
+          name: liz-macos-x86_64-${{ env.LIZ_VERSION }}
 
   native-image-linux:
     needs: [build-jar]
@@ -144,9 +152,13 @@ jobs:
 
       # ===
 
+      - name: Load the version into environment
+        run: |
+          echo "LIZ_VERSION=`cat resources/LIZ_VERSION`" >> $GITHUB_ENV
+
       - uses: actions/download-artifact@v1
         with:
-          name: liz-jar
+          name: liz-standalone-jar-${{ env.LIZ_VERSION }}
           path: .
 
       - name: Prepare GraalVM
@@ -166,7 +178,7 @@ jobs:
       - uses: actions/upload-artifact@v1
         with:
           path: target/liz
-          name: liz-linux
+          name: liz-linux-x86_64-${{ env.LIZ_VERSION }}
 
   # Collate artifacts, upload to GitHub Releases on semver tags
 
