@@ -17,15 +17,17 @@
                   '->> #'clojure.core/->>
                   '= #'clojure.core/=
                   '.. #'clojure.core/..
-                  'aset #'clojure.core/aset
+                  'aset #'core/aset
                   'bit-and #'core/bit-and
                   ; 'bit-clear #'core/bit-clear
                   'bit-flip #'core/bit-flip
+                  'bit-not #'core/bit-not
                   'bit-or #'core/bit-or
                   'bit-set #'core/bit-set
                   'bit-shift-left #'core/bit-shift-left
                   'bit-shift-right #'core/bit-shift-right
                   'bit-test #'core/bit-test
+                  'bit-xor #'core/bit-xor
                   'cond #'clojure.core/cond
                   'dec #'core/dec
                   'dec! #'core/dec!
@@ -39,6 +41,8 @@
                   'int #'clojure.core/int
                   'mod #'core/mod
                   'neg? #'core/neg?
+                  'not #'core/not
+                  'not= #'core/not=
                   'odd? #'core/odd?
                   'pos? #'core/pos?
                   'rem #'core/rem

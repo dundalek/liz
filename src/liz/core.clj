@@ -1,5 +1,5 @@
 (ns liz.core
-  (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test dec defn inc mod zero? pos? neg? even? odd? rem]))
+  (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test bit-xor bit-not dec defn inc mod zero? pos? neg? even? odd? rem aset not= not]))
 
 (defmacro defn [& body]
   (cons 'fn body))
@@ -15,6 +15,12 @@
 
 (defmacro bit-shift-right [& body]
   (cons '>> body))
+
+(defmacro bit-xor [& body]
+  (cons (symbol "^") body))
+
+(defmacro bit-not [x]
+  (list (symbol "~") x))
 
 (defmacro bit-flip [x n]
   (list 'bit-xor x (list '<< 1 n)))
@@ -35,6 +41,12 @@
   (list 'while (bindings 1)
         (cons 'bind
               (cons (bindings 0) body))))
+
+(defmacro not [x]
+  (list '! x))
+
+(defmacro not= [x y]
+  (list '!= x y))
 
 (defmacro zero? [num]
   (list '= num 0))
@@ -68,3 +80,10 @@
 
 (defmacro dec! [n]
   (list '-= n 1))
+
+(defmacro aset [& args]
+  (when (< (count args) 3)
+    (throw (ex-info (str "(aset) was given " (count args) " arguments, but expects at least 3") {})))
+  (list 'set!
+        (cons 'aget (butlast args))
+        (last args)))

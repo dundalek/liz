@@ -110,21 +110,6 @@
   (when top-level
     (emits ";\n")))
 
-(defn emit-aset [{:keys [args top-level env]}]
-  (assert-gte-count args 3 'aset env)
-  (let [target (first args)
-        indexes (-> args rest butlast)
-        val (last args)]
-    (-emit target)
-    (doseq [index indexes]
-      (emits "[")
-      (-emit index)
-      (emits "]"))
-    (emits " = ")
-    (-emit val)
-    (when top-level
-      (emits ";\n"))))
-
 (defmethod -emit :maybe-class
   [expr]
   (let [s (str (:class expr))
@@ -174,9 +159,6 @@
   (cond
     (=  method 'aget)
     (emit-aget node)
-
-    (=  method 'aset)
-    (emit-aset node)
 
     (=  method 'equiv)
     (emit-operator '== args node)
@@ -412,23 +394,8 @@
       (emits " ")
       (emit-block args))
 
-    (= (:form f) 'not=)
-    (emit-operator '!= args expr)
-
-    (#{'not 'clojure.core/not} (:form f))
-    (emit-operator '! args expr)
-
-    (= (:form f) 'bit-xor)
-    (emit-operator "^" args expr)
-
-    (= (:form f) 'bit-not)
-    (emit-operator "~" args expr)
-
     (= (:form f) 'aget)
     (emit-aget expr)
-
-    (= (:form f) 'aset)
-    (emit-aset expr)
 
     (= (:form f) 'zig*)
     (emits (:val (first args)))

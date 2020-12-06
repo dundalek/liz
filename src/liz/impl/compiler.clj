@@ -12,26 +12,30 @@
 (defn compile
   ([forms] (compile forms "NO_SOURCE_PATH"))
   ([forms file-name]
-   (env/ensure (ana/global-env)
-               (doseq [form forms]
-       ;; TODO One try/catch for analyzer and one for emitter
-                 (try
-                   (let [ast (ana/analyze form)]
-                     (emitter/emit ast))
-                   (catch Exception e
-                     (let [{:keys [node line column]} (ex-data e)]
-                       (cond
-                         node
-                         (do (binding [*print-meta* true]
-                               (pprint node))
-                             (println (ex-message e)))
+   (env/ensure
+    (ana/global-env)
+    (doseq [form forms]
+      ;; TODO One try/catch for analyzer and one for emitter
+      (try
+        (let [ast (ana/analyze form)]
+          (emitter/emit ast))
+        (catch Exception e
+          (let [{:keys [node]} (ex-data e)
+                line (or (-> e ex-data :line) (-> form meta :line))
+                column (or (-> e ex-data :column) (-> form meta :column))]
+            (cond
+              node
+              (do (binding [*print-meta* true]
+                    (pprint node))
+                  (println (ex-message e)))
 
-                         (and line column)
-                         (binding [*out* *err*]
-                           (println (str file-name ":" line ":" column ": error:") (ex-message e)))
+              (ex-data e)
+              (binding [*out* *err*]
+                (println (str file-name ":" line ":" column ": error:") (ex-message e)))
 
-                         :else (binding [*out* *err*]
-                                 (println "Unexpected error" e))))))))))
+              :else
+              (binding [*out* *err*]
+                (println (str file-name ":" line ":" column ": error:") e))))))))))
 
 (defn compile-file [file-in out-dir]
   (let [file-out (str out-dir "/" (str/replace file-in #"\.[^.]+$" ".zig"))
