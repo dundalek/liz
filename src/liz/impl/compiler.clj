@@ -57,8 +57,22 @@
     ;; TODO detect if zig is present
     (let [{:keys [exit err]} (sh "zig" "fmt" file-out)]
       (when-not (zero? exit)
-        (println (str "zig fmt error for " file-out ":"))
-        (println err)))))
+        (binding [*out* *err*]
+          (println (str "zig fmt error for " file-out ":"))
+          (println err))))))
+
+(defn compile-string [s]
+  (let [out (with-out-str
+              (-> s
+                  (reader/read-all-string)
+                  (compile)))]
+    ;; TODO detect if zig is present
+    (let [{:keys [exit err out]} (sh "zig" "fmt" "--stdin" :in out)]
+      (if (zero? exit)
+        out
+        (binding [*out* *err*]
+          (println (str "zig fmt error:"))
+          (println err))))))
 
 (comment
   (let [form (first (reader/read-all-string "(= ('when 1) 3)"))

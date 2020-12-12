@@ -57,6 +57,12 @@
       :exit (exit-message options)
       :compile (let [{:keys [files out-dir]} options
                      out-dir (or out-dir ".")]
-                 (doseq [file-in files]
-                   (compiler/compile-file file-in out-dir))
+                 (if (and (= (count files) 1)
+                          (= (first files) "-"))
+                   (do (-> (slurp *in*)
+                           (compiler/compile-string)
+                           (print))
+                       (flush))
+                   (doseq [file-in files]
+                     (compiler/compile-file file-in out-dir)))
                  (shutdown-agents)))))
