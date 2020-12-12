@@ -114,6 +114,9 @@ jobs:
       - name: Build macOS native image
         run: scripts/build-native liz.jar
 
+      - name: Test native image
+        run: env LIZ_BINARY_PATH=target/liz scripts/ci-macos-test
+
       - uses: actions/upload-artifact@v1
         with:
           path: target/liz
@@ -174,6 +177,9 @@ jobs:
 
       - name: Build Linux native image
         run: scripts/build-native liz.jar
+
+      - name: Test native image
+        run: env LIZ_BINARY_PATH=target/liz scripts/ci-linux-test
 
       - uses: actions/upload-artifact@v1
         with:
