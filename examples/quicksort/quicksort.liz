@@ -1,0 +1,35 @@
+;; -*- clojure -*-
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(defn ^:pub ^void quicksort [^"[] usize" a]
+  (quicksort_ a 0 (dec a.len)))
+
+(defn ^void quicksort_ [^"[] usize" a ^usize lo ^usize hi]
+  (when (< lo hi)
+    (var p (partition a lo hi))
+    (quicksort_ a lo (dec p))
+    (quicksort_ a (inc p) hi)))
+
+(defn ^usize partition [^"[] usize" a ^usize lo ^usize hi]
+  (var pivot (aget a hi))
+  (var i lo)
+  (var j lo)
+  ; (for-range [j lo (inc hi)])
+  (while-step (<= j hi) (inc! j)
+    (when (< (aget a j) pivot)
+      (swap a i j)
+      (inc! i)))
+  (swap a i hi)
+  (return i))
+
+(defn ^void swap [^"[] usize" a ^usize i ^usize j]
+  (var t (aget a i))
+  (aset a i (aget a j))
+  (aset a j t))
+
+(test "quicksort"
+  (var items ^"[_]usize" [3 1 5 4 2])
+  (var expected ^"[_]usize" [1 2 3 4 5])
+  (quicksort &items)
+  (expect (std.mem.eql usize &expected &items)))
