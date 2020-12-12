@@ -3,7 +3,6 @@
             [clojure.string :as str]
             [liz.impl.reader :as reader]
             [liz.impl.compiler :as compiler]
-            [clojure.java.io :as io]
             [clojure.java.shell :refer [sh]])
   (:import (java.io File StringWriter)))
 
@@ -27,17 +26,19 @@
               (assoc (parse-header header)
                      :content (str/join "\n" lines))))))
 
+(def compile-string
+  (let [liz-bin (System/getenv "LIZ_BINARY_PATH")]
+    (if (str/blank? liz-bin)
+      compiler/compile-string
+      (fn compile-string [s]
+        (:out (sh liz-bin "-" :in s))))))
+
 (defn run-test-case [{:keys [name action content]} result]
   (testing name
     (with-temp-file
       (fn [out-file]
-        (with-open [writer (io/writer out-file)]
-          (binding [*out* writer]
-            (-> (reader/read-all-string content)
-                (compiler/compile))))
-        (is (= {:exit 0 :out (str out-file "\n") :err ""}
-               (sh "zig" "fmt" out-file))
-            "Formatter runs")
+        (->> (compile-string content)
+             (spit out-file))
         (let [{:keys [exit out err]} (sh "zig" action out-file)]
           (is (= (:name result) name))
           (is (= 0 exit))
