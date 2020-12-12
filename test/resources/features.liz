@@ -338,3 +338,15 @@
   (var items ^"[_]usize" [3 2 1])
   (std.sort.sort usize &items {} (comptime (.asc std.sort usize)))
   (expect (std.mem.eql usize (& ^"[_]usize" [1 2 3]) &items)))
+
+;; == test try in expression
+
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "try in expression"
+  (var ^isize a -5)
+  (var ^isize b 10)
+
+  (expect (= 50 (* (try (std.math.absInt a))
+                   (try (std.math.absInt b))))))

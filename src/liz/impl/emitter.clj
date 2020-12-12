@@ -553,10 +553,13 @@
   (case (count catches)
     0 (do (assert (= (:op body) :do))
           (assert (empty? (:statements body)))
+          (when-not top-level
+            (emits "("))
           (emits "try ")
           (-emit (:ret body))
-          (when top-level
-            (emits ";\n")))
+          (if top-level
+            (emits ";\n")
+            (emits ")")))
     1 (do (assert (= (:op body) :do))
           (assert (empty? (:statements body)))
           (-emit (:ret body))
