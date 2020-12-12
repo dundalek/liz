@@ -96,3 +96,8 @@ All 1 tests passed.
 
 1/1 test "while-some"... OK
 All 1 tests passed.
+
+;; == test comptime expression
+
+1/1 test "comptime expression"... OK
+All 1 tests passed.

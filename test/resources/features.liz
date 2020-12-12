@@ -328,3 +328,13 @@
       (set! optional_i nil)))
 
   (expect (= cnt 6)))
+
+;; == test comptime expression
+
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "comptime expression"
+  (var items ^"[_]usize" [3 2 1])
+  (std.sort.sort usize &items {} (comptime (.asc std.sort usize)))
+  (expect (std.mem.eql usize (& ^"[_]usize" [1 2 3]) &items)))

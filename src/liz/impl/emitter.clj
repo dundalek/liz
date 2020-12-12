@@ -172,7 +172,7 @@
               (emits ".")
               (emits method)
               (emits "(")
-              (emits-interposed ", " args)
+              (emits-interposed ", " (map #(assoc % :in-statement true) args))
               (emits ")")
               (when top-level
                 (emits ";\n")))))
@@ -213,7 +213,7 @@
                 :top-level top-level)))
 
 (defmethod -emit :invoke
-  [{f :fn :keys [args top-level env] :as expr}]
+  [{f :fn :keys [args top-level in-statement env] :as expr}]
   ;; TODO: perhaps move const into analysis pass
   (cond
     (#{'const 'vari} (:class f))
@@ -392,7 +392,9 @@
     (do
       (emits (:form f))
       (emits " ")
-      (emit-block args))
+      (if in-statement
+        (maybe-emit-block args false)
+        (emit-block args)))
 
     (= (:form f) 'aget)
     (emit-aget expr)
@@ -458,7 +460,7 @@
     (do
       (-emit f)
       (emits "(")
-      (emits-interposed ", " args)
+      (emits-interposed ", " (map #(assoc % :in-statement true) args))
       (emits ")")
       (when top-level
         (emits ";\n")))))
