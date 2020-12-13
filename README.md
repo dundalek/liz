@@ -83,7 +83,7 @@ export GRAALVM_HOME=/your/path/to/graal
 scripts/build-native
 ```
 
-Download [Zig 0.7.0](https://ziglang.org/download/#release-0.7.0). To compile files from Liz to Zig pass them as parameters:
+Download [Zig 0.7.1](https://ziglang.org/download/#release-0.7.1). To compile files from Liz to Zig pass them as parameters:
 ```sh
 liz file1.liz file2.liz
 # file1.zig and file2.zig will be created

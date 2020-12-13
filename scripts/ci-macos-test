@@ -2,8 +2,8 @@
 
 set -xeuo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
-curl https://ziglang.org/download/0.7.0/zig-macos-x86_64-0.7.0.tar.xz -O
-tar xf zig-macos-x86_64-0.7.0.tar.xz
-export PATH="zig-macos-x86_64-0.7.0:$PATH"
+curl "https://ziglang.org/download/${ZIG_VERSION}/zig-macos-x86_64-${ZIG_VERSION}.tar.xz" -O
+tar xf "zig-macos-x86_64-${ZIG_VERSION}.tar.xz"
+export PATH="zig-macos-x86_64-${ZIG_VERSION}:$PATH"
 
 clojure -Mtest
