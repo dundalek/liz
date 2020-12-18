@@ -1,5 +1,6 @@
 (ns liz.core
-  (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test bit-xor bit-not dec defn inc mod zero? pos? neg? even? odd? rem aset not= not]))
+  (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test bit-xor bit-not
+                            dec defn inc mod zero? pos? neg? even? odd? rem aset not= not when-not]))
 
 (defmacro defn [& body]
   (cons 'fn body))
@@ -41,6 +42,13 @@
   (list 'while (bindings 1)
         (cons 'bind
               (cons (bindings 0) body))))
+
+;; Customized implementation because code expanded using clojure.core/when-not
+;; can result in Zig error: `expression value is ignored`.
+(defmacro when-not [test & body]
+  (list 'if
+        (list 'not test)
+        (cons 'do body)))
 
 (defmacro not [x]
   (list '! x))

@@ -47,7 +47,7 @@
                   'pos? #'core/pos?
                   'rem #'core/rem
                   'when #'clojure.core/when
-                  'when-not #'clojure.core/when-not
+                  'when-not #'core/when-not
                   'while-some #'core/while-some
                   'zero? #'core/zero?}]
     {'clojure.core

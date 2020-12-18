@@ -5,10 +5,11 @@ All 1 tests passed.
 
 ;; == test conditionals tests
 
-1/3 test "if-not"... OK
-2/3 test "when with multiple forms"... OK
-3/3 test "when-not"... OK
-All 3 tests passed.
+1/4 test "if-not"... OK
+2/4 test "when with multiple forms"... OK
+3/4 test "when-not"... OK
+4/4 test "when-not with expression"... OK
+All 4 tests passed.
 
 ;; == test Operators
 

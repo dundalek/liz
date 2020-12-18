@@ -32,6 +32,12 @@
     (+= i 2))
   (expect (= i 3)))
 
+(test "when-not with expression"
+  (var ^usize a 0)
+  (when-not (= a 1)
+    (inc! a))
+  (expect (= 1 a)))
+
 ;; == test Operators
 (const std (@import "std"))
 (const expect std.testing.expect)
