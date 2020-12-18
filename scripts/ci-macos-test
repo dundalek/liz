@@ -2,6 +2,8 @@
 
 set -xeuo pipefail && cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
+. scripts/ci-env
+
 curl "https://ziglang.org/download/${ZIG_VERSION}/zig-macos-x86_64-${ZIG_VERSION}.tar.xz" -O
 tar xf "zig-macos-x86_64-${ZIG_VERSION}.tar.xz"
 export PATH="zig-macos-x86_64-${ZIG_VERSION}:$PATH"
