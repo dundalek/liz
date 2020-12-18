@@ -209,7 +209,7 @@
     ^i32 x
     ^i32 y))
 
-(test "compile-time array initalization"
+(test "compile-time array initialization"
   (expect (= (.-x (aget fancy_array 4)) 4))
   (expect (= (.-y (aget fancy_array 4)) 8)))
 
