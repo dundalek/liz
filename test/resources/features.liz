@@ -45,6 +45,46 @@
     :else (+= diff 2))
   (expect (= 4 diff)))
 
+(test "if-some"
+  (var ^?usize maybe_a 0)
+  (if-some [a maybe_a]
+    (set! maybe_a (+ a 1))
+    (unreachable))
+  (expect (= 1 maybe_a.?)))
+
+(test "if-some no else"
+  (var ^?usize maybe_a 0)
+  (if-some [a maybe_a]
+    (set! maybe_a (+ a 1)))
+  (expect (= 1 maybe_a.?)))
+
+(test "if-some no else nil"
+  (var ^?usize maybe_a nil)
+  (if-some [a maybe_a]
+    (set! maybe_a (+ a 1)))
+  (expect (= nil maybe_a)))
+
+(test "if-some else"
+  (var ^?usize maybe_a nil)
+  (if-some [a maybe_a]
+    (set! maybe_a (+ a 1))
+    (set! maybe_a 2))
+  (expect (= 2 maybe_a.?)))
+
+(test "when-some"
+  (var ^?usize maybe_a 0)
+  (when-some [a maybe_a]
+    (set! maybe_a (+ a 1))
+    (set! maybe_a (+ maybe_a.? 2)))
+  (expect (= 3 maybe_a.?)))
+
+(test "when-some nil"
+  (var ^?usize maybe_a nil)
+  (when-some [a maybe_a]
+    (set! maybe_a (+ a 1))
+    (set! maybe_a (+ maybe_a.? 2)))
+  (expect (= nil maybe_a)))
+
 ;; == test case
 (const std (@import "std"))
 (const expect std.testing.expect)

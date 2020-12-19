@@ -205,7 +205,7 @@ bit-test
 if
 when
 
-consider if-let, when-let
+if-some, when-some
 
 if-not
 

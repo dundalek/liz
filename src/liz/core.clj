@@ -1,6 +1,6 @@
 (ns liz.core
   (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test bit-xor bit-not
-                            dec defn inc mod zero? pos? neg? even? odd? rem aset not= not when-not]))
+                            dec defn inc mod zero? pos? neg? even? odd? rem aset not= not when-not if-some when-some]))
 
 (defmacro defn [& body]
   (cons 'fn body))
@@ -48,6 +48,18 @@
 (defmacro when-not [test & body]
   (list 'if
         (list 'not test)
+        (cons 'do body)))
+
+(defmacro if-some
+  ([bindings then]
+   (list 'if-some bindings then nil))
+  ([bindings then else]
+   (list 'if (bindings 1)
+         (list 'bind (bindings 0) then)
+         else)))
+
+(defmacro when-some [bindings & body]
+  (list 'if-some bindings
         (cons 'do body)))
 
 (defmacro not [x]

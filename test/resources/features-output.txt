@@ -5,12 +5,18 @@ All 1 tests passed.
 
 ;; == test conditionals tests
 
-1/5 test "if-not"... OK
-2/5 test "when with multiple forms"... OK
-3/5 test "when-not"... OK
-4/5 test "when-not with expression"... OK
-5/5 test "cond with assignments"... OK
-All 5 tests passed.
+1/11 test "if-not"... OK
+2/11 test "when with multiple forms"... OK
+3/11 test "when-not"... OK
+4/11 test "when-not with expression"... OK
+5/11 test "cond with assignments"... OK
+6/11 test "if-some"... OK
+7/11 test "if-some no else"... OK
+8/11 test "if-some no else nil"... OK
+9/11 test "if-some else"... OK
+10/11 test "when-some"... OK
+11/11 test "when-some nil"... OK
+All 11 tests passed.
 
 ;; == test case
 

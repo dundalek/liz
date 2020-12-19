@@ -36,6 +36,7 @@
                   'even? #'core/even?
                   'fn #'clojure.core/fn
                   'if-not #'clojure.core/if-not
+                  'if-some #'core/if-some
                   'inc #'core/inc
                   'inc! #'core/inc!
                   'int #'clojure.core/int
@@ -48,6 +49,7 @@
                   'rem #'core/rem
                   'when #'clojure.core/when
                   'when-not #'core/when-not
+                  'when-some #'core/when-some
                   'while-some #'core/while-some
                   'zero? #'core/zero?}]
     {'clojure.core
