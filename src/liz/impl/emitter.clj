@@ -429,12 +429,11 @@
             (emits-interposed ",\n" (:items (unwrap-meta test)))
             (-emit test))
           (emits " => ")
-          (-emit then)
+          (-emit (assoc then :in-statement true))
           (emits ",\n"))
-        (when-let [then (and (odd? (count (rest args)))
-                             (last args))]
+        (when (odd? (count (rest args)))
           (emits "else => ")
-          (-emit then)
+          (-emit (assoc (last args) :in-statement true))
           (emits ",\n"))
         (emits "}"))
 
@@ -528,10 +527,13 @@
       (-emit (assoc test :in-statement true)))
     (emits ") ")
     (-emit (assoc then
-                  :top-level (and top-level (not has-else))))
+                  :top-level (and top-level (not has-else))
+                  :in-statement true))
     (when has-else
       (emits " else ")
-      (-emit (assoc else :top-level top-level)))))
+      (-emit (assoc else
+                    :top-level top-level
+                    :in-statement true)))))
 
 (defmethod -emit :do
   [{:keys [statements ret]}]

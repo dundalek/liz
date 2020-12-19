@@ -38,6 +38,44 @@
     (inc! a))
   (expect (= 1 a)))
 
+(test "cond with assignments"
+  (var ^usize diff 2)
+  (cond
+    (= diff 1) (inc! diff)
+    :else (+= diff 2))
+  (expect (= 4 diff)))
+
+;; == test case
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "case with assignment"
+  (var buf "ab")
+  (var ^usize i 0)
+
+  (case (aget buf 0)
+    \a (inc! i)
+    (unreachable))
+  (expect (= 1 i)))
+
+(test "case with assignment in else"
+  (var buf "ab")
+  (var ^usize i 0)
+
+  (case (aget buf 1)
+    \a (inc! i)
+    (set! i 5))
+  (expect (= 5 i)))
+
+(test "switch with nil"
+  (var buf "ab")
+  (var ^?bool a true)
+  (set! a
+    (case (aget buf 0)
+      \b true
+      nil))
+  (expect (= nil a)))
+
 ;; == test Operators
 (const std (@import "std"))
 (const expect std.testing.expect)
