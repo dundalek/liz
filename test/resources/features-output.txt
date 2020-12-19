@@ -95,8 +95,9 @@ All 1 tests passed.
 
 ;; == test while-some
 
-1/1 test "while-some"... OK
-All 1 tests passed.
+1/2 test "while-some"... OK
+2/2 test "when in while"... OK
+All 2 tests passed.
 
 ;; == test comptime expression
 

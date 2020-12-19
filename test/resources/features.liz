@@ -335,6 +335,13 @@
 
   (expect (= cnt 6)))
 
+(test "when in while"
+  (var ^?usize a 1)
+  (while-some [b a]
+    (when (= b 1)
+      (set! a nil)))
+  (expect (= nil a)))
+
 ;; == test comptime expression
 
 (const std (@import "std"))

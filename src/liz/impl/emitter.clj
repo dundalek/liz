@@ -63,18 +63,20 @@
     (not in-statement) (emits ")")))
 
 (defn emit-block [forms]
-  (emits "{\n")
-  (doseq [form forms]
-    (-emit (assoc form :top-level true)))
+  (emits "{")
+  (when (seq forms)
+    (emits "\n")
+    (doseq [form forms]
+      (-emit (assoc form :top-level true))))
   (emits "}"))
 
 (defn maybe-emit-block
   ([forms] (maybe-emit-block forms false))
   ([forms top-level]
-   (if (> (count forms) 1)
-     (emit-block forms)
+   (if (= (count forms) 1)
      (-emit (assoc (first forms) :top-level top-level
-                   :in-statement true)))))
+                   :in-statement true))
+     (emit-block forms))))
 
 (defn emit-for [args]
   ;(pprint args)
@@ -357,9 +359,11 @@
     (do (emits "while (")
         (-emit (first args))
         (emits ") ")
-        (if (zero? (count (rest args)))
-          (emits "{}")
-          (maybe-emit-block (rest args) top-level)))
+        (if (and (= 1 (count (rest args)))
+                 (= 'bind (-> args rest first :form first)))
+          (-emit (assoc (fnext args)
+                        :force-block true))
+          (emit-block (rest args))))
 
     (or (= (:form f) 'while-step))
     (do (emits "while (")
@@ -406,8 +410,8 @@
     (do (emits "|")
         (-emit (first args))
         (emits "| ")
-        (if (zero? (count (rest args)))
-          (emits "{}")
+        (if (:force-block expr)
+          (emit-block (rest args))
           (maybe-emit-block (rest args) top-level)))
 
     (= (:form f) 'range)
