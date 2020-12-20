@@ -1,3 +1,4 @@
+;; -*- clojure -*-
 (aset x y)
 
 (aget x)
@@ -14,3 +15,5 @@
 
 (slice a)
 (slice a 1 2 3 4)
+
+(def ^usize a 0)

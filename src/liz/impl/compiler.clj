@@ -23,19 +23,14 @@
           (let [{:keys [node]} (ex-data e)
                 line (or (-> e ex-data :line) (-> form meta :line))
                 column (or (-> e ex-data :column) (-> form meta :column))]
-            (cond
-              node
-              (do (binding [*print-meta* true]
-                    (pprint node))
-                  (println (ex-message e)))
-
-              (ex-data e)
-              (binding [*out* *err*]
-                (println (str file-name ":" line ":" column ": error:") (ex-message e)))
-
-              :else
-              (binding [*out* *err*]
-                (println (str file-name ":" line ":" column ": error:") e))))))))))
+            (binding [*out* *err*]
+              (print (str file-name ":" line ":" column ": error: "))
+              (cond
+                node (do
+                       (println (ex-message e))
+                       (println "Please open an issue and include the source code that caused this: https://github.com/dundalek/liz/issues/new"))
+                (ex-data e) (println (ex-message e))
+                :else (println e))))))))))
 
 (defn compile-file [file-in out-dir]
   (let [file-out (str out-dir "/" (str/replace file-in #"\.[^.]+$" ".zig"))

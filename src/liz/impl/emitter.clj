@@ -578,6 +578,11 @@
     (throw (ex-info (str "try was given " (count catches) " catch clauses, but only 1 is supported")
                     (ana.utils/source-info env)))))
 
+(defmethod -emit :def
+  [{:keys [env]}]
+  (throw (ex-info "(def) is not supported, use (const ...) or (var ...) to declare a variable"
+                  (ana.utils/source-info env))))
+
 (defmethod -emit :default
   [expr]
   (throw (ex-info (str "Unhandled op for -emit: " (:op expr) " children: " (:children expr))
