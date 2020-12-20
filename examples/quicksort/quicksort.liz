@@ -15,7 +15,6 @@
   (var pivot (aget a hi))
   (var i lo)
   (var j lo)
-  ; (for-range [j lo (inc hi)])
   (while-step (<= j hi) (inc! j)
     (when (< (aget a j) pivot)
       (swap a i j)

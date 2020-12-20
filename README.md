@@ -5,8 +5,9 @@ Borrowing [Zig](https://github.com/ziglang/zig)'s tagline:
 > General-purpose programming language and toolchain for maintaining robust, optimal, and reusable software.
 
 - Written as Clojure-looking S-expressions ([EDN](https://github.com/edn-format/edn)) and translated to Zig code.
-- [Type-A](https://github.com/dundalek/awesome-lisp-languages#classification) Lisp-flavored language. I call it "Lisp-flavored" because Liz is missing many fundamental features to be called a Lisp or even a Clojure dialect.
-- When you need a language closer to the metal and Clojure with GraalVM's native image is still too much overhead.
+- [Type-A](https://github.com/dundalek/awesome-lisp-languages#classification) Lisp-flavored language. I call it "Lisp-flavored" because Liz is missing many fundamental features to be called a Lisp or even a Clojure dialect (no closures, no persistent data structures).
+- When you need a language closer to the metal and Clojure with GraalVM's native image is too much overhead.
+- Supports many targets including x86, ARM, RISC-V, WASM and [more](https://ziglang.org/#Wide-range-of-targets-supported)
 
 Why is Zig an interesting choice as a lower-level language for Clojure programmers? (compared to Rust, Go or other languages):
 
@@ -63,7 +64,7 @@ FizzBuzz example:
       :else (print "{}\n" [i]))))
 ```
 
-See [guess number program](./examples/guess_number/main.liz) for a longer example and the [examples](./examples) directory for more.
+See [examples](./examples) directory or Advent of Code [solutions](https://github.com/dundalek/adventofcode/tree/master/2020/src/).
 
 
 ## Documentation
@@ -73,31 +74,19 @@ To see how a form is used you can also take a look at [samples](./test/resources
 
 ## Usage
 
-Not released yet. Build from source:
-```sh
-git clone https://github.com/dundalek/liz.git
-cd liz
-scripts/build-jar
-# or
-export GRAALVM_HOME=/your/path/to/graal
-scripts/build-native
-```
 
-Download [Zig 0.7.1](https://ziglang.org/download/#release-0.7.1). To compile files from Liz to Zig pass them as parameters:
+
+Download [Liz](https://github.com/dundalek/liz/releases/latest) and [Zig](https://ziglang.org/download/#release-0.7.1). To compile files from Liz to Zig pass them as parameters:
 ```sh
 liz file1.liz file2.liz
 # file1.zig and file2.zig will be created
 ```
 
+Then use `zig run` or `zig build-exe` on the generated `.zig` files.
+
 Alternatively you can use the JAR:
 ```
 java -jar liz.jar file1.liz file2.liz
-```
-
-Or use Clojure CLI (inside the repo directory):
-
-```sh
-clojure -m liz.main file1.liz file2.liz
 ```
 
 ### Extension and Syntax highlighting
@@ -117,6 +106,38 @@ Use `.liz` file extension. It works pretty well to use Clojure syntax highlighti
 ## License
 
 MIT
+
+## Development
+
+Get the source:
+
+```sh
+git clone https://github.com/dundalek/liz.git
+cd liz
+```
+
+Build platform independent uberjar:
+```sh
+scripts/build-jar
+```
+
+Build the native binary (requires [GraalVM](https://www.graalvm.org/downloads/)):
+```sh
+# If you don't have native-image on PATH then you need to specify GRAALVM_HOME
+export GRAALVM_HOME=/your/path/to/graal
+scripts/build-native
+```
+
+Use Clojure CLI:
+
+```sh
+clj -M -m liz.main file1.liz file2.liz
+```
+
+Run tests:
+```sh
+clj -Mtest
+```
 
 ## TODOs
 
