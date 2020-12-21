@@ -9,7 +9,7 @@
 (const suspend_download true)
 (const suspend_file true)
 
-(defn ^:pub ^void main []
+(defn ^void main []
   (set! _ (async (amainWrap)))
   ;; This simulates an event loop)
   (when suspend_file

@@ -29,7 +29,7 @@ Hello World:
 ;; hello.liz
 (const print (.. (@import "std") -debug -print))
 
-(defn ^:pub ^void main []
+(defn ^void main []
   (print "Hello, world!\n" []))
 ```
 
@@ -54,7 +54,7 @@ FizzBuzz example:
 ```clojure
 (const print (.. (@import "std") -debug -print))
 
-(defn ^:pub ^void main []
+(defn ^void main []
   (var ^usize i 1)
   (while-step (<= i 100) (inc! i)
     (cond

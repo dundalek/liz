@@ -9,7 +9,7 @@
 ;; == run hello_again
 (const print (.. (@import "std") -debug -print))
 
-(defn ^:pub ^void main []
+(defn ^void main []
   (print "Hello, world!\n" []))
 
 ;; == test comments
@@ -28,7 +28,7 @@
 (const os std.os)
 (const expect std.testing.expect)
 
-(defn ^:pub ^void main []
+(defn ^void main []
     ;; integers
     (const ^i32 one_plus_one (+ 1 1))
     (print "1 + 1 = {}\n" [one_plus_one])
@@ -419,7 +419,7 @@
 ;; == run struct_name.zig
 (const std (@import "std"))
 
-(defn ^:pub ^void main []
+(defn ^void main []
     (const Foo (struct))
     (.print std.debug "variable: {}\n", [(@typeName Foo)])
     (.print std.debug "anonymous: {}\n", [(@typeName (struct))])
@@ -1378,7 +1378,7 @@
 (const std (@import "std"))
 (const Allocator std.mem.Allocator)
 
-(defn ^:pub ^void main []
+(defn ^void main []
   (set! _ (async (amainWrap)))
 
   ;; Typically we would use an event loop to manage resuming async functions
@@ -1443,7 +1443,7 @@
 (const std (@import "std"))
 (const Allocator std.mem.Allocator)
 
-(defn ^:pub ^void main []
+(defn ^void main []
   (set! _ (async (amainWrap))))
 
 (defn ^void amainWrap []

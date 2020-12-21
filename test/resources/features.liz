@@ -441,3 +441,10 @@
 
   (expect (= 50 (* (try (std.math.absInt a))
                    (try (std.math.absInt b))))))
+
+;; == run defn
+(const print (.. (@import "std") -debug -print))
+
+;; defn adds pub modifier by default, so main can run
+(defn ^void main []
+  (print "Hello\n" []))

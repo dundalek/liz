@@ -242,6 +242,7 @@ dotimes
 #### functions
 
 fn
+defn-
 defn
 return
 

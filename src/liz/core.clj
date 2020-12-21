@@ -1,8 +1,13 @@
 (ns liz.core
   (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test bit-xor bit-not
-                            dec defn inc mod zero? pos? neg? even? odd? rem aset not= not when-not if-some when-some]))
+                            dec defn defn- inc mod zero? pos? neg? even? odd? rem aset not= not when-not if-some when-some]))
 
-(defmacro defn [& body]
+(defmacro defn [name & body]
+  (cons 'fn
+        (cons (with-meta name (merge {:pub true} (meta name)))
+              body)))
+
+(defmacro defn- [& body]
   (cons 'fn body))
 
 (defmacro bit-and [& body]

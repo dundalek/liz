@@ -5,7 +5,7 @@
 
 (var ^anyframe frame undefined)
 
-(defn ^:pub ^void main []
+(defn ^void main []
   (.warn std.debug "begin main\n" [])
   (set! _ (async (func)))
   (.warn std.debug "resume func\n" [])

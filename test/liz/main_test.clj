@@ -90,6 +90,19 @@
     (is (= "" (str out)))
     (is (= (slurp "test/resources/error-reporting-output.txt") (str err)))))
 
+(deftest test-defns
+  (is (= "pub fn main() void {\n    print(\"Hello\\n\", .{});\n}\n"
+         (compile-string (binding [*print-meta* true]
+                           (pr-str '(defn ^void main []
+                                      (print "Hello\n" []))))))
+      "defn automatically adds pub modifier")
+
+  (is (= "fn main() void {\n    print(\"Hello\\n\", .{});\n}\n"
+         (compile-string (binding [*print-meta* true]
+                           (pr-str '(defn- ^void main []
+                                      (print "Hello\n" []))))))
+      "defn- results in private declaration without pub modifier"))
+
 ;;(defmacro define-test-cases [suite-name cases results]
 ;;  (let [tests (map vector (eval cases) (eval results))]
 ;;    `(do (is (= ~(count cases)

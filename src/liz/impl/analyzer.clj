@@ -32,6 +32,7 @@
                   'dec #'core/dec
                   'dec! #'core/dec!
                   'defn #'core/defn
+                  'defn- #'core/defn-
                   'deref #'clojure.core/deref
                   'even? #'core/even?
                   'fn #'clojure.core/fn

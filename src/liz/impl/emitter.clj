@@ -476,14 +476,14 @@
                       (-> parent-raw-forms first first)
                       (-> raw-forms first first))
         {:keys [tag export pub extern]} (meta meta-node)]
+    (when pub
+      (emits "pub "))
     (when extern
       (emits "extern ")
       (emits (pr-str extern))
       (emits " "))
     (when export
       (emits "export "))
-    (when pub
-      (emits "pub "))
     (emits "fn ")
     (emits name)
     ;; :fn-method
