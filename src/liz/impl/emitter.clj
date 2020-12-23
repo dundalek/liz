@@ -492,7 +492,9 @@
       (emits-interposed ", " params
                         (fn [{:keys [op name]}]
                           (assert (= op :binding))
-          ;; params is :op :binding but lets do it manually for now because :binding could have different meaning elsewhere
+                          ;; params is :op :binding but lets do it manually for now because :binding could have different meaning elsewhere
+                          (when (-> name meta :noalias)
+                            (emits "noalias "))
                           (when (-> name meta :comptime)
                             (emits "comptime "))
                           (emits name)
