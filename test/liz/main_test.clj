@@ -59,7 +59,8 @@
 (defn run-test-cases [cases results]
   (let [tests (map vector cases results)]
     (is (= (count cases)
-           (count results)))
+           (count results))
+        "number of tests matches number of test outputs")
     (doseq [[{:keys [name] :as test-case} result] tests]
       (run-test-case test-case result))))
 

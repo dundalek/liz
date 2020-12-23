@@ -287,6 +287,42 @@
   ;; pointer types have a `child` field which tells you the type they point to.
   (expect (= (.. (@typeInfo *u32) -Pointer -child) u32)))
 
+;; == test variable alignment
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "variable alignment"
+  (var ^i32 x 1234)
+  (const align_of_i32 (@alignOf (@TypeOf x)))
+  (expect (= (@TypeOf &x) *i32))
+  (expect (= *i32 (zig* "*align(align_of_i32) i32")))
+  (when (= std.Target.current.cpu.arch .x86_64)
+    (expect (= (.. (@typeInfo *i32) -Pointer -alignment) 4))))
+
+;; == test variable and function alignment
+(const expect (.. (@import "std") -testing -expect))
+
+(var ^"u8 align(4)" foo 100)
+
+(test "global variable alignment"
+  (expect (= (-> (@TypeOf &foo) (@typeInfo) .-Pointer .-alignment) 4))
+  (expect (= (@TypeOf &foo) (zig* "*align(4) u8")))
+  (const ^"*[1]u8" as_pointer_to_array &foo)
+  (const ^"[]u8" as_slice as_pointer_to_array)
+  (expect (= (@TypeOf as_slice) (zig* "[]align(4) u8"))))
+
+
+(defn- ^"align(@sizeOf(usize) * 2) i32" derp [] (return 1234))
+(defn- ^"align(1) void" noop1 [] (do))
+(defn- ^"align(4) void" noop4 [] (do))
+
+(test "function alignment"
+  (expect (= (derp) 1234))
+  (expect (= (@TypeOf noop1) (zig* "fn() align(1) void")))
+  (expect (= (@TypeOf noop4) (zig* "fn() align(4) void")))
+  (noop1)
+  (noop4))
+
 ;; == test structs.zig
 ;; Declare a struct.
 ;; Zig gives no guarantees about the order of fields and the size of
@@ -427,6 +463,38 @@
 
 (defn ^type List [^:comptime ^type T]
   (return (struct ^T x)))
+
+;; == test struct_result.zig
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(const Point
+  (struct ^i32 x
+          ^i32 y))
+
+(test "anonymous struct literal"
+  (var ^Point pt {:x 13
+                  :y 67})
+
+  (expect (= pt.x 13))
+  (expect (= pt.y 67)))
+
+;; == test struct_anon.zig
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "fully anonymous struct"
+  (dump {:int (@as u32 1234)
+         :float (@as f64 12.34)
+         :b true
+         :s "hi"}))
+
+(defn- ^void dump [^anytype args]
+  (expect (= args.int 1234))
+  (expect (= args.float 12.34))
+  (expect args.b)
+  (expect (= (aget args.s 0) \h))
+  (expect (= (aget args.s 1) \i)))
 
 ;; == test enums.zig
 (const expect (.. (@import "std") -testing -expect))
@@ -1234,6 +1302,19 @@
   (expect (= (do_op add 5 6) 11))
   (expect (= (do_op sub2 5 6) -1)))
 
+;; == test Function Parameter Type Inference
+(const expect (.. (@import "std") -testing -expect))
+
+(defn- ^"@TypeOf(x)" addFortyTwo [^anytype x]
+  (return (+ x 42)))
+
+(test "fn type inference"
+  (expect (= (addFortyTwo 1) 43))
+  (expect (= (@TypeOf (addFortyTwo 1)) comptime_int))
+  (var ^i64 y 2)
+  (expect (= (addFortyTwo y) 44))
+  (expect (= (@TypeOf (addFortyTwo y)) i64)))
+
 ;; == test Errors
 (const std (@import "std"))
 
@@ -1503,3 +1584,16 @@
   (var ^usize zero 0)
   (var ptr (@intToPtr (zig* "*allowzero i32") zero))
   (expect (= (@ptrToInt ptr) 0)))
+
+;; == test Builtin @reduce
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "vector @reduce"
+  (const ^"std.meta.Vector(4, i32)" value ^"[_]i32" [1 -1 1 -1])
+  (const result (> value (@splat 4 (@as i32 0))))
+  ;; result is { true, false, true, false}
+  (comptime (expect (= (@TypeOf result) (std.meta.Vector 4 bool))))
+  (const is_all_true (@reduce .And result))
+  (comptime (expect (= (@TypeOf is_all_true) bool)))
+  (expect (= is_all_true false)))

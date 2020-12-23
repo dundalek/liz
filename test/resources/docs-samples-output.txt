@@ -84,6 +84,17 @@ All 1 tests passed.
 2/2 test "pointer child type"... OK
 All 2 tests passed.
 
+;; == test variable alignment
+
+1/1 test "variable alignment"... OK
+All 1 tests passed.
+
+;; == test variable and function alignment
+
+1/2 test "global variable alignment"... OK
+2/2 test "function alignment"... OK
+All 2 tests passed.
+
 ;; == test structs.zig
 
 1/4 test "dot product"... OK
@@ -102,6 +113,16 @@ All 1 tests passed.
 variable: Foo
 anonymous: struct:5:52
 function: List(i32)
+
+;; == test struct_result.zig
+
+1/1 test "anonymous struct literal"... OK
+All 1 tests passed.
+
+;; == test struct_anon.zig
+
+1/1 test "fully anonymous struct"... OK
+All 1 tests passed.
 
 ;; == test enums.zig
 
@@ -249,6 +270,11 @@ All 3 tests passed.
 1/1 test "function"... OK
 All 1 tests passed.
 
+;; == test Function Parameter Type Inference
+
+1/1 test "fn type inference"... OK
+All 1 tests passed.
+
 ;; == test Errors
 
 1/1 test "coerce subset to superset"... OK
@@ -301,4 +327,9 @@ file_text: this is the file contents
 ;; == test Pointers allowzero
 
 1/1 test "allowzero"... OK
+All 1 tests passed.
+
+;; == test Builtin @reduce
+
+1/1 test "vector @reduce"... OK
 All 1 tests passed.
