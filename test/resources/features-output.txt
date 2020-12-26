@@ -126,3 +126,13 @@ All 1 tests passed.
 ;; == run defn
 
 Hello
+
+;; == test opaque types
+
+1/1 test "opaque types"... OK
+All 1 tests passed.
+
+;; == test orelse
+
+1/1 test "orelse"... OK
+All 1 tests passed.

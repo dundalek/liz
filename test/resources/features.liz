@@ -448,3 +448,24 @@
 ;; defn adds pub modifier by default, so main can run
 (defn ^void main []
   (print "Hello\n" []))
+
+;; == test opaque types
+(const std (@import "std"))
+(const mem std.mem)
+(const expect std.testing.expect)
+
+(const OpaqueA ^opaque {})
+(const OpaqueB ^opaque {})
+(test "opaque types"
+  (expect (not= *OpaqueA *OpaqueB))
+  (expect (mem.eql u8 (@typeName OpaqueA) "OpaqueA"))
+  (expect (mem.eql u8 (@typeName OpaqueB) "OpaqueB")))
+
+;; == test orelse
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "orelse"
+  (const ^?u32 value nil)
+  (const unwrapped (orelse value 1234))
+  (expect (= unwrapped 1234)))
