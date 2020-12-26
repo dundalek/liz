@@ -136,3 +136,9 @@ All 1 tests passed.
 
 1/1 test "orelse"... OK
 All 1 tests passed.
+
+;; == test nosuspend
+
+1/2 test "nosuspend expression"... OK
+2/2 test "nosuspend block"... OK
+All 2 tests passed.

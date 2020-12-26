@@ -469,3 +469,20 @@
   (const ^?u32 value nil)
   (const unwrapped (orelse value 1234))
   (expect (= unwrapped 1234)))
+
+;; == test nosuspend
+(const expect (.. (@import "std") -testing -expect))
+
+(defn- ^usize plusTwo [^usize x]
+  (return (+ x 2)))
+
+(test "nosuspend expression"
+  (var a (nosuspend (plusTwo 3)))
+  (expect (= 5 a)))
+
+(test "nosuspend block"
+  (var ^usize b 0)
+  (nosuspend
+    (+= b 2)
+    (*= b 3))
+  (expect (= 6 b)))

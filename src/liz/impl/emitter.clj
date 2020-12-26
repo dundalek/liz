@@ -400,6 +400,12 @@
         (maybe-emit-block args false)
         (emit-block args)))
 
+    (#{'nosuspend} (:form f))
+    (do
+      (emits (:form f))
+      (emits " ")
+      (maybe-emit-block args top-level))
+
     (= (:form f) 'aget)
     (emit-aget expr)
 
