@@ -17,3 +17,5 @@
 (slice a 1 2 3 4)
 
 (def ^usize a 0)
+
+(dotimes [i (+ 1 2)])

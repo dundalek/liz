@@ -34,6 +34,7 @@
                   'defn #'core/defn
                   'defn- #'core/defn-
                   'deref #'clojure.core/deref
+                  'dotimes #'core/dotimes
                   'even? #'core/even?
                   'fn #'clojure.core/fn
                   'if-not #'clojure.core/if-not

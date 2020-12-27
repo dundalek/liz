@@ -142,3 +142,10 @@ All 1 tests passed.
 1/2 test "nosuspend expression"... OK
 2/2 test "nosuspend block"... OK
 All 2 tests passed.
+
+;; == test dotimes
+
+1/3 test "dotimes"... OK
+2/3 test "dotimes with variable"... OK
+3/3 test "dotimes with type hint"... OK
+All 3 tests passed.

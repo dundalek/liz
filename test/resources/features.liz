@@ -486,3 +486,25 @@
     (+= b 2)
     (*= b 3))
   (expect (= 6 b)))
+
+;; == test dotimes
+(const expect (.. (@import "std") -testing -expect))
+
+(test "dotimes"
+  (var ^usize a 0)
+  (dotimes [i 4]
+    (+= a i))
+  (expect (= 6 a)))
+
+(test "dotimes with variable"
+  (var ^usize a 0)
+  (var ^usize b 4)
+  (dotimes [i b]
+    (+= a i))
+  (expect (= 6 a)))
+
+(test "dotimes with type hint"
+  (var ^isize a 0)
+  (dotimes [^isize i 4]
+    (+= a i))
+  (expect (= 6 a)))

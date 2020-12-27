@@ -1,6 +1,7 @@
 (ns liz.core
   (:refer-clojure :exclude [bit-and bit-or bit-shift-left bit-shift-right bit-flip bit-set bit-test bit-xor bit-not
-                            dec defn defn- inc mod zero? pos? neg? even? odd? rem aset not= not when-not if-some when-some]))
+                            dec defn defn- inc mod zero? pos? neg? even? odd? rem aset not= not when-not if-some when-some
+                            dotimes]))
 
 (defmacro defn [name & body]
   (cons 'fn
@@ -47,6 +48,18 @@
   (list 'while (bindings 1)
         (cons 'bind
               (cons (bindings 0) body))))
+
+(defmacro dotimes [bindings & body]
+  ; (vector? bindings) "a vector for its binding"
+  ; (= 2 (count bindings)) "exactly 2 forms in binding vector"
+  (clojure.core/when-not (or (symbol? (second bindings))
+                             (number? (second bindings)))
+    (throw (ex-info "(dotimes) can only take constant or variable. If you need to use an expression then you can extract it as variable declaration outside the loop." {})))
+  (list 'do (list 'var (vary-meta (first bindings) update :tag #(or % 'usize)) 0)
+        (concat
+         (list 'while-step (list '< (first bindings) (second bindings))
+               (list 'inc! (first bindings)))
+         body)))
 
 ;; Customized implementation because code expanded using clojure.core/when-not
 ;; can result in Zig error: `expression value is ignored`.
