@@ -7,3 +7,5 @@ imgui.ini
 .nrepl-port
 /tmp*
 /pom.xml
+.clj-kondo
+.lsp
