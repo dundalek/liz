@@ -232,7 +232,7 @@
 (test "fully anonymous list literal"
   (dump [(@as u32 1234), (@as f64 12.34), true, "hi"]))
 
-(defn ^void dump [^var args]
+(defn ^void dump [^anytype args]
   (expect (= (.-0 args) 1234))
   (expect (= (.-1 args) 12.34))
   (expect (.-2 args))
