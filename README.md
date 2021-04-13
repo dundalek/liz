@@ -19,7 +19,7 @@ Why is Zig an interesting choice as a lower-level language for Clojure programme
 - Decomplecting principles  
   Most higher-level languages have bundled memory management, which disqualifies them from certain use cases. Zig decomplects memory management by introducing explicit Allocator interface, programmer can choose fitting memory management mechanism with regard to performance/convenience trade-offs.
 
-**Status:** *Highly experimental.*
+**Status:** *Experimental, but proving itself on a few projects.*
 
 ## Examples
 
@@ -64,8 +64,10 @@ FizzBuzz example:
       :else (print "{}\n" [i]))))
 ```
 
-See [examples](./examples) directory or Advent of Code [solutions](https://github.com/dundalek/adventofcode/tree/master/2020/src/).
-
+See also:
+- more [examples](./examples)
+- Advent of Code [solutions](https://github.com/dundalek/adventofcode/tree/master/2020/src/)
+- Rendering [TUI with Notcurses](https://github.com/dundalek/notcurses-zig-example)
 
 ## Documentation
 
