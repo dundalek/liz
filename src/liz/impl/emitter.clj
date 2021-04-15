@@ -92,6 +92,9 @@
   (emit-block (rest args)))
 
 (defn emit-statement [{f :fn :keys [args top-level]}]
+  (when (and (= 'usingnamespace (:form f))
+             (true? (-> f :form meta :pub)))
+    (emits "pub "))
   (emits (:form f))
   (when (seq args)
     (emits " "))

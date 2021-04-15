@@ -110,6 +110,24 @@
                            (pr-str '(defn ^usize readlink [^:noalias ^"[*:0]const u8" path ^:noalias ^"[*]u8" buf_ptr ^usize buf_len])))))
       "noalias parameter modifier"))
 
+(deftest test-pub-usingnamespace
+  (is (= "pub usingnamespace @import(\"std\");\n"
+         (compile-string "(^:pub usingnamespace (@import \"std\"))"))))
+
+(deftest test-usingnamespace-cimport
+  (with-temp-file
+    (fn [out-file]
+      (->> (compile-string
+            "(usingnamespace
+               (@cImport (do (@cInclude \"stdio.h\"))))
+             (defn ^void main []
+               (set! _ (printf \"Hello\\n\")))")
+           (spit out-file))
+      (let [{:keys [exit out err]} (sh "zig" "run" "-lc" out-file)]
+        (is (= 0 exit))
+        (is (= "Hello\n" out))
+        (is (= "" err))))))
+
 ;;(defmacro define-test-cases [suite-name cases results]
 ;;  (let [tests (map vector (eval cases) (eval results))]
 ;;    `(do (is (= ~(count cases)
