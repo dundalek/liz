@@ -97,6 +97,14 @@ All 3 tests passed.
 11/11 test "odd?"... OK
 All 11 tests passed.
 
+;; == test Builtin at-prefixed functions
+
+1/4 test "@mod"... OK
+2/4 test "@rem"... OK
+3/4 test "@divTrunc"... OK
+4/4 test "@divFloor"... OK
+All 4 tests passed.
+
 ;; == test array aset
 
 1/1 test "using special form names"... OK

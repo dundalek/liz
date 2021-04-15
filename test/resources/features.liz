@@ -370,6 +370,24 @@
   (expect (odd? 1))
   (expect (not (odd? 2))))
 
+;; == test Builtin at-prefixed functions
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "@mod"
+  (expect (= 0 (@mod 15 5)))
+  (expect (= 1 (@mod 7 2)))
+  (expect (= 1 (@mod 10 3))))
+
+(test "@rem"
+  (expect (= -1 (@rem -10 3))))
+
+(test "@divTrunc"
+  (expect (= -1 (@divTrunc -5 3))))
+
+(test "@divFloor"
+  (expect (= -2 (@divFloor -5 3))))
+
 ;; == test array aset
 (const std (@import "std"))
 (const expect std.testing.expect)

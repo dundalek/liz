@@ -19,3 +19,5 @@
 (def ^usize a 0)
 
 (dotimes [i (+ 1 2)])
+
+(@1 x)

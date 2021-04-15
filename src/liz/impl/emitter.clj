@@ -245,10 +245,13 @@
 
     (and (= (:op f) :var)
          (= (:form f) 'clojure.core/deref))
-    (do
+    (let [ident (:form (first args))]
       (assert-arg-count expr 1)
+      (when-not (symbol? ident)
+        (throw (ex-info (str "a symbol is expected after @, but `" ident "` was given")
+                        (ana.utils/source-info env))))
       (emits "@")
-      (-emit (first args)))
+      (emits ident))
 
     (and (= (:op f) :maybe-class)
          (= (:class f) 'slice))

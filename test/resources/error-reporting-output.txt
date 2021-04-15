@@ -9,3 +9,4 @@ NO_SOURCE_PATH:16:1: error: (slice) was given 1 arguments, but expects at least 
 NO_SOURCE_PATH:17:1: error: (slice) was given 5 arguments, but expects at most 4
 NO_SOURCE_PATH:19:1: error: (def) is not supported, use (const ...) or (var ...) to declare a variable
 NO_SOURCE_PATH:21:1: error: (dotimes) can only take constant or variable. If you need to use an expression then you can extract it as variable declaration outside the loop.
+NO_SOURCE_PATH:23:2: error: a symbol is expected after @, but `1` was given
