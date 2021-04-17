@@ -3,12 +3,16 @@
             [liz.impl.lang :refer [binary-ops]]
             [clojure.tools.analyzer.utils :as ana.utils]))
 
+(defn format-assert-arg-message [form args]
+  (str "(" form ") was given " (count args)
+       " argument" (when (not= 1 (count args)) "s")))
+
 (defn assert-arg-count
   ([{:keys [args env] :as ast} cnt]
    (assert-arg-count args cnt (-> ast :fn :form) env))
   ([args cnt form info]
    (when (not= (count args) cnt)
-     (throw (ex-info (str "(" form ") was given " (count args) " arguments, but expects " cnt)
+     (throw (ex-info (str (format-assert-arg-message form args) ", but expects " cnt)
                      (ana.utils/source-info info))))))
 
 (defn assert-gte-count
@@ -16,7 +20,7 @@
    (assert-gte-count args cnt (-> ast :fn :form) env))
   ([args cnt form info]
    (when (< (count args) cnt)
-     (throw (ex-info (str "(" form ") was given " (count args) " arguments, but expects at least " cnt)
+     (throw (ex-info (str (format-assert-arg-message form args) ", but expects at least " cnt)
                      (ana.utils/source-info info))))))
 
 (defn assert-lte-count
@@ -24,7 +28,7 @@
    (assert-lte-count args cnt (-> ast :fn :form) env))
   ([args cnt form info]
    (when (> (count args) cnt)
-     (throw (ex-info (str "(" form ") was given " (count args) " arguments, but expects at most " cnt)
+     (throw (ex-info (str (format-assert-arg-message form args) ", but expects at most " cnt)
                      (ana.utils/source-info info))))))
 
 (defn unwrap-meta [expr]

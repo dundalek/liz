@@ -9,6 +9,7 @@
 
 (const a)
 (const a b c)
+(const)
 
 (try a (catch _ _ x)
        (catch _ _ y))
@@ -21,3 +22,6 @@
 (dotimes [i (+ 1 2)])
 
 (@1 x)
+
+;; Macro expansion with wrong arity
+(mod 1)

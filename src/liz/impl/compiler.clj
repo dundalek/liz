@@ -26,6 +26,7 @@
             (binding [*out* *err*]
               (print (str file-name ":" line ":" column ": error: "))
               (cond
+                (instance? clojure.lang.ArityException e) (println (ex-message e))
                 node (do
                        (println (ex-message e))
                        (println "Please open an issue and include the source code that caused this: https://github.com/dundalek/liz/issues/new"))

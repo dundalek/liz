@@ -1,12 +1,14 @@
 NO_SOURCE_PATH:2:1: error: (aset) was given 2 arguments, but expects at least 3
-NO_SOURCE_PATH:4:1: error: (aget) was given 1 arguments, but expects at least 2
+NO_SOURCE_PATH:4:1: error: (aget) was given 1 argument, but expects at least 2
 NO_SOURCE_PATH:6:1: error: (var) was given 3 arguments, but expects 2
 NO_SOURCE_PATH:8:1: error: (inline) was given 2 arguments, but expects 1
-NO_SOURCE_PATH:10:1: error: (const) was given 1 arguments, but expects 2
+NO_SOURCE_PATH:10:1: error: (const) was given 1 argument, but expects 2
 NO_SOURCE_PATH:11:1: error: (const) was given 3 arguments, but expects 2
-NO_SOURCE_PATH:13:1: error: try was given 2 catch clauses, but only 1 is supported
-NO_SOURCE_PATH:16:1: error: (slice) was given 1 arguments, but expects at least 2
-NO_SOURCE_PATH:17:1: error: (slice) was given 5 arguments, but expects at most 4
-NO_SOURCE_PATH:19:1: error: (def) is not supported, use (const ...) or (var ...) to declare a variable
-NO_SOURCE_PATH:21:1: error: (dotimes) can only take constant or variable. If you need to use an expression then you can extract it as variable declaration outside the loop.
-NO_SOURCE_PATH:23:2: error: a symbol is expected after @, but `1` was given
+NO_SOURCE_PATH:12:1: error: (const) was given 0 arguments, but expects 2
+NO_SOURCE_PATH:14:1: error: try was given 2 catch clauses, but only 1 is supported
+NO_SOURCE_PATH:17:1: error: (slice) was given 1 argument, but expects at least 2
+NO_SOURCE_PATH:18:1: error: (slice) was given 5 arguments, but expects at most 4
+NO_SOURCE_PATH:20:1: error: (def) is not supported, use (const ...) or (var ...) to declare a variable
+NO_SOURCE_PATH:22:1: error: (dotimes) can only take constant or variable. If you need to use an expression then you can extract it as variable declaration outside the loop.
+NO_SOURCE_PATH:24:2: error: a symbol is expected after @, but `1` was given
+NO_SOURCE_PATH:27:1: error: Wrong number of args (1) passed to: liz.core/mod

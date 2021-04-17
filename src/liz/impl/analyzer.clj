@@ -74,7 +74,12 @@
       (throw (ex-info (str "(var) was given " (dec (count form)) " arguments, but expects 2")
                       (ana.utils/source-info (meta form))))
       (with-meta (cons 'vari (rest form)) (meta form)))
-    (ana.jvm/macroexpand-1 form env)))
+    (try
+      (ana.jvm/macroexpand-1 form env)
+      (catch clojure.lang.ArityException e
+        ;; Macros have two hidden parameters `form` and `env` to pass additional information
+        ;; Subtract them to get the actual number of expected parameters (Clojure does it similarly in macroexpand1 in Compiler.java)
+        (throw (clojure.lang.ArityException. (- (.-actual e) 2) (.-name e)))))))
 
 (def
   ^{:pass-info {:walk :post :depends #{} :after #{#'source-info}}}
