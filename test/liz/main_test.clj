@@ -92,6 +92,15 @@
     (is (= "" (str out)))
     (is (= (slurp "test/resources/error-reporting-output.txt") (str err)))))
 
+(deftest reporting-reader-errors
+  (let [out (StringWriter.)
+        err (StringWriter.)]
+    (binding [*out* out
+              *err* err]
+      (compiler/compile-string "\n  )\n]"))
+    (is (= "" (str out)))
+    (is (= "NO_SOURCE_PATH:2:3: reader error: Unmatched delimiter: )\n" (str err)))))
+
 (deftest test-defns
   (is (= "pub fn main() void {\n    print(\"Hello\\n\", .{});\n}\n"
          (compile-string (binding [*print-meta* true]
