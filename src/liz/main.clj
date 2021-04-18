@@ -51,6 +51,24 @@
   (println message)
   (System/exit (if ok? 0 1)))
 
+(defn compile-stdin []
+  (let [success (compiler/compile-string (slurp *in*))]
+    (flush)
+    (shutdown-agents)
+    (System/exit (if success 0 1))))
+
+(defn compile-files [files out-dir]
+  (let [!success (atom true)]
+    ;; Process all files regardless of errors, compile-file captures all errors and reports them to stderr.
+    ;; If compilation for any liz file fails it is likely that zig compilation will also fail
+    ;; and its errors would just distract from liz errors. Therefore we exit with failing code,
+    ;; so that usage like `liz src/*.liz && zig build` will not continue with zig compilation.
+    (doseq [file-in files]
+      (when-not (compiler/compile-file file-in out-dir)
+        (reset! !success false)))
+    (shutdown-agents)
+    (System/exit (if @!success 0 1))))
+
 (defn -main [& args]
   (let [{:keys [action options]} (process-args args)]
     (case action
@@ -59,10 +77,5 @@
                      out-dir (or out-dir ".")]
                  (if (and (= (count files) 1)
                           (= (first files) "-"))
-                   (do (-> (slurp *in*)
-                           (compiler/compile-string)
-                           (print))
-                       (flush))
-                   (doseq [file-in files]
-                     (compiler/compile-file file-in out-dir)))
-                 (shutdown-agents)))))
+                   (compile-stdin)
+                   (compile-files files out-dir))))))

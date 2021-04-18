@@ -29,8 +29,10 @@
 (def compile-string
   (let [liz-bin (System/getenv "LIZ_BINARY_PATH")]
     (if (str/blank? liz-bin)
-      compiler/compile-string
-      (fn compile-string [s]
+      (fn compile-string-in-memory [s]
+        (with-out-str
+          (compiler/compile-string s)))
+      (fn compile-string-with-binary [s]
         (:out (sh liz-bin "-" :in s))))))
 
 (defn run-test-case [{:keys [name action content]} result]
@@ -86,8 +88,7 @@
     (binding [*out* out
               *err* err]
       (-> (slurp "test/resources/error-reporting-fixture.liz")
-          (reader/read-all-string)
-          (compiler/compile)))
+          (compiler/compile-string)))
     (is (= "" (str out)))
     (is (= (slurp "test/resources/error-reporting-output.txt") (str err)))))
 

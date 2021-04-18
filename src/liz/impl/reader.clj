@@ -20,3 +20,10 @@
                                :col-key :column
                                :end-row-key :end-line
                                :end-col-key :end-column}))
+
+(defn print-error [file-in e]
+  (if (= (:type (ex-data e)) :edamame/error)
+    (let [{:keys [line column]} (ex-data e)]
+      (println (str file-in ":" line ":" column ": reader error: " (ex-message e)))
+      true)
+    false))
