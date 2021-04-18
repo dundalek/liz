@@ -67,7 +67,7 @@ jobs:
 
   test-macos:
     macos:
-      xcode: "11.3.1"
+      xcode: "12.4.0"
 
     working_directory: /Users/distiller/project
 
@@ -79,7 +79,10 @@ jobs:
           keys:
           - clj-test-dependencies-macos-{{ checksum "deps.edn" }}
 
-      - run: brew install clojure
+      # - run: brew install clojure
+      - run: sh <(curl -L https://nixos.org/nix/install) --darwin-use-unencrypted-nix-store-volume
+      - run: nix-env -i clojure
+      - run: clojure -e "(clojure-version)"
 
       # run tests
       - run: scripts/ci-macos-test
