@@ -25,3 +25,15 @@
 
 ;; Macro expansion with wrong arity
 (mod 1)
+
+;; Macro expansion with wrong arity in nested form
+(defn ^void main []
+  (mod 1))
+
+(defn ^void main []
+  (const))
+
+(defn a 0)
+
+(defn ^void main []
+  (if))

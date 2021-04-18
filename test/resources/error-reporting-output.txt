@@ -11,4 +11,8 @@ NO_SOURCE_PATH:18:1: error: (slice) was given 5 arguments, but expects at most 4
 NO_SOURCE_PATH:20:1: error: (def) is not supported, use (const ...) or (var ...) to declare a variable
 NO_SOURCE_PATH:22:1: error: (dotimes) can only take constant or variable. If you need to use an expression then you can extract it as variable declaration outside the loop.
 NO_SOURCE_PATH:24:2: error: a symbol is expected after @, but `1` was given
-NO_SOURCE_PATH:27:1: error: Wrong number of args (1) passed to: liz.core/mod
+NO_SOURCE_PATH:27:1: error: (mod) was given 1 arguments
+NO_SOURCE_PATH:31:3: error: (mod) was given 1 arguments
+NO_SOURCE_PATH:34:3: error: (const) was given 0 arguments, but expects 2
+NO_SOURCE_PATH:36:1: error: (fn): Parameter declaration 0 should be a vector
+NO_SOURCE_PATH:39:3: error: Wrong number of args to if, had: 0

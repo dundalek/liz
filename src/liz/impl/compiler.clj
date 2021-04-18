@@ -93,11 +93,13 @@
     @!success))
 
 (comment
-  (let [form (first (reader/read-all-string "(= ('when 1) 3)"))
+  (let [form (first (reader/read-all-string "(defn a 0)"))
+        _ (binding [*print-meta* true]
+                    ;*print-level* 5]
+            (pprint form))
         ast (env/ensure (ana/global-env)
                         (ana/analyze form))]
     (binding [*print-meta* true]
               ;*print-level* 5]
-      (pprint form)
       (pprint ast))
     (emitter/emit ast)))

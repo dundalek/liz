@@ -84,13 +84,18 @@
 
 (deftest error-reporting
   (let [out (StringWriter.)
-        err (StringWriter.)]
-    (binding [*out* out
-              *err* err]
-      (-> (slurp "test/resources/error-reporting-fixture.liz")
-          (compiler/compile-string)))
+        err (StringWriter.)
+        _ (binding [*out* out
+                    *err* err]
+            (-> (slurp "test/resources/error-reporting-fixture.liz")
+                (compiler/compile-string)))
+        expected-lines (str/split-lines (slurp "test/resources/error-reporting-output.txt"))
+        actual-lines (str/split-lines (str err))]
     (is (= "" (str out)))
-    (is (= (slurp "test/resources/error-reporting-output.txt") (str err)))))
+    (is (= (count expected-lines) (count actual-lines))
+        "number of reported errors matches")
+    (doseq [[expected actual] (map list expected-lines actual-lines)]
+      (is (= expected actual)))))
 
 (deftest reporting-reader-errors
   (let [out (StringWriter.)

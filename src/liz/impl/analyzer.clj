@@ -79,7 +79,19 @@
       (catch clojure.lang.ArityException e
         ;; Macros have two hidden parameters `form` and `env` to pass additional information
         ;; Subtract them to get the actual number of expected parameters (Clojure does it similarly in macroexpand1 in Compiler.java)
-        (throw (clojure.lang.ArityException. (- (.-actual e) 2) (.-name e)))))))
+        (throw (ex-info (str "(" (first form) ") was given " (- (.-actual e) 2) " arguments")
+                        (ana.utils/source-info (meta form))
+                        e)))
+      (catch java.lang.IllegalArgumentException e
+        (throw (ex-info (str (if (seq? form) (str "(" (first form) ")") form) ": " (ex-message e))
+                        (ana.utils/source-info (meta form))
+                        e)))
+      (catch Exception e
+        (if (ex-data e)
+          (throw e)
+          (throw (ex-info (str (if (seq? form) (str "(" (first form) ")") form) " " (class e) ": " (ex-message e))
+                          (ana.utils/source-info (meta form))
+                          e)))))))
 
 (def
   ^{:pass-info {:walk :post :depends #{} :after #{#'source-info}}}
