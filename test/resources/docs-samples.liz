@@ -3,8 +3,8 @@
 (const std (@import "std"))
 
 (defn ^:pub ^!void main []
-  (const stdout (.. std -io getStdOut outStream))
-  (try (.print stdout "Hello, {}!\n" ["world"])))
+  (const stdout (.. std -io getStdOut writer))
+  (try (.print stdout "Hello, {s}!\n" ["world"])))
 
 ;; == run hello_again
 (const print (.. (@import "std") -debug -print))
@@ -26,7 +26,7 @@
 (const print std.debug.print)
 (const std (@import "std"))
 (const os std.os)
-(const expect std.testing.expect)
+(const assert std.debug.assert)
 
 (defn ^void main []
     ;; integers
@@ -45,29 +45,29 @@
 
     ;; optional
     (var ^"?[]const u8" optional_value nil)
-    (try (expect (= optional_value nil)))
+    (assert (= optional_value nil))
 
-    (print "\noptional 1\ntype: {}\nvalue: {}\n"
+    (print "\noptional 1\ntype: {s}\nvalue: {s}\n"
       [(@typeName (@TypeOf optional_value))
        optional_value])
 
     (set! optional_value "hi")
-    (try (expect (not= optional_value null)))
+    (assert (not= optional_value null))
 
-    (print "\noptional 2\ntype: {}\nvalue: {}\n"
+    (print "\noptional 2\ntype: {s}\nvalue: {s}\n"
       [(@typeName (@TypeOf optional_value))
        optional_value])
 
     ;; error union
     (var ^anyerror!i32 number_or_error error.ArgNotFound)
 
-    (print "\nerror union 1\ntype: {}\nvalue: {}\n"
+    (print "\nerror union 1\ntype: {s}\nvalue: {}\n"
       [(@typeName (@TypeOf number_or_error))
        number_or_error])
 
     (set! number_or_error 1234)
 
-    (print "\nerror union 2\ntype: {}\nvalue: {}\n"
+    (print "\nerror union 2\ntype: {s}\nvalue: {}\n"
       [(@typeName (@TypeOf number_or_error))
        number_or_error]))
 
@@ -85,6 +85,7 @@
   (try (expect (= 0x1f4a9 128169)))
   ; (try (expect (= \💯 128175));
   (try (expect (.eql mem u8 "hello" "h\u0065llo"))))
+  ; (try (expect (= (aget "\xff" 0) 0xff))))
 
 ;; == test namespaced_global.zig
 (const std (@import "std"))
@@ -102,21 +103,21 @@
 
 ;; == test Thread Local Variables
 (const std (@import "std"))
-(const expect std.testing.expect)
+(const assert std.debug.assert)
 
 (var ^:threadlocal ^i32 x 1234)
 
 (test "thread local storage"
-  (const thread1 (try (std.Thread.spawn {} testTls)))
-  (const thread2 (try (std.Thread.spawn {} testTls)))
+  (const thread1 (try (std.Thread.spawn testTls {})))
+  (const thread2 (try (std.Thread.spawn testTls {})))
   (testTls {})
   (.wait thread1)
   (.wait thread2))
 
 (defn ^void testTls [^void context]
-  (try (expect (= x 1234)))
+  (assert (= x 1234))
   (+= x 1)
-  (try (expect (= x 1235))))
+  (assert (= x 1235)))
 
 ;; == test comptime variables
 (const std (@import "std"))
@@ -139,6 +140,7 @@
 
 ;; == test Arrays
 (const expect (.. (@import "std") -testing -expect))
+(const assert (.. (@import "std") -debug -assert))
 (const mem (.. (@import "std") -mem))
 
 ;; array literal
@@ -146,13 +148,13 @@
 
 ;; get the size of an array
 (comptime
-  (try (expect (= message.len 5))))
+  (assert (= message.len 5)))
 
 ;; A string literal is a pointer to an array literal
 (const same_message "hello")
 
 (comptime
-  (try (expect (.eql mem u8 (& message) same_message))))
+  (assert (.eql mem u8 (& message) same_message)))
 
 (test "iterate over an array"
   (var ^usize sum 0)
@@ -175,25 +177,25 @@
 (const part_two ^"[_]i32" [5, 6, 7, 8])
 (const all_of_it (++ part_one part_two))
 (comptime
-  (try (expect (.eql mem i32 (& all_of_it) (& ^"[_]i32" [1, 2, 3, 4, 5, 6, 7, 8])))))
+  (assert (.eql mem i32 (& all_of_it) (& ^"[_]i32" [1, 2, 3, 4, 5, 6, 7, 8]))))
 
 ;; remember that string literals are arrays
 (const hello "hello")
 (const world "world")
 (const hello_world (++ hello " " world))
 (comptime
-  (try (expect (.eql mem u8 hello_world "hello world"))))
+  (assert (.eql mem u8 hello_world "hello world")))
 
 ;; ** does repeating patterns
 (const pattern (** "ab" 3))
 (comptime
-  (try (expect (.eql mem u8 pattern "ababab"))))
+  (assert (.eql mem u8 pattern "ababab")))
 
 ;; initialize an array to zero
 (const all_zero (** ^"[_]u16" [0] 10))
 (comptime
-  (try (expect (= all_zero.len 10)))
-  (try (expect (= (aget all_zero 5) 0))))
+  (assert (= all_zero.len 10))
+  (assert (= (aget all_zero 5) 0)))
 
 ;; use compile-time code to initialize an array
 (var fancy_array
@@ -230,9 +232,9 @@
 (const expect std.testing.expect)
 
 (test "fully anonymous list literal"
-  (dump [(@as u32 1234), (@as f64 12.34), true, "hi"]))
+  (try (dump [(@as u32 1234), (@as f64 12.34), true, "hi"])))
 
-(defn ^void dump [^anytype args]
+(defn ^!void dump [^anytype args]
   (try (expect (= (.-0 args) 1234)))
   (try (expect (= (.-1 args) 12.34)))
   (try (expect (.-2 args)))
@@ -452,14 +454,31 @@
     (when (not= (+ x.a x.b) 1239)
       (@compileError "it's even comptime known!")))
 
+;; == test packed struct
+;; It's also possible to set alignment of struct fields:
+
+(const std (@import "std"))
+(const expectEqual std.testing.expectEqual)
+
+(test "aligned struct fields"
+  (const S (struct
+             ^"u32 align(2)" a
+             ^"u32 align(64)" b))
+
+  (var foo ^S{:a 1 :b 2})
+
+  (try (expectEqual 64 (@alignOf S)))
+  (try (expectEqual (zig* "*align(2) u32") (@TypeOf &foo.a)))
+  (try (expectEqual (zig* "*align(64) u32") (@TypeOf &foo.b))))
+
 ;; == run struct_name.zig
 (const std (@import "std"))
 
 (defn ^void main []
     (const Foo (struct))
-    (.print std.debug "variable: {}\n", [(@typeName Foo)])
-    (.print std.debug "anonymous: {}\n", [(@typeName (struct))])
-    (.print std.debug "function: {}\n", [(@typeName (List i32))]))
+    (.print std.debug "variable: {s}\n", [(@typeName Foo)])
+    (.print std.debug "anonymous: {s}\n", [(@typeName (struct))])
+    (.print std.debug "function: {s}\n", [(@typeName (List i32))]))
 
 (defn ^type List [^:comptime ^type T]
   (return (struct ^T x)))
@@ -484,17 +503,40 @@
 (const expect std.testing.expect)
 
 (test "fully anonymous struct"
-  (dump {:int (@as u32 1234)
-         :float (@as f64 12.34)
-         :b true
-         :s "hi"}))
+  (try (dump {:int (@as u32 1234)
+              :float (@as f64 12.34)
+              :b true
+              :s "hi"})))
 
-(defn- ^void dump [^anytype args]
+(defn- ^!void dump [^anytype args]
   (try (expect (= args.int 1234)))
   (try (expect (= args.float 12.34)))
   (try (expect args.b))
   (try (expect (= (aget args.s 0) \h)))
   (try (expect (= (aget args.s 1) \i))))
+
+;; == test tuple.zig
+
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "tuple"
+  (const values (++ [(@as u32 1234)
+                     (@as f64 12.34)
+                     true
+                     "hi"]
+                    (** [false] 2)))
+
+  (try (expect (= (aget values 0) 1234)))
+  (try (expect (= (aget values 4) false)))
+  (inline
+    (for [[v i] values]
+      (when (not= i 2)
+        (continue))
+      (try (expect v))))
+
+  (try (expect (= values.len 6)))
+  (try (expect (= (zig* "values.@\"3\"[0]") \h))))
 
 ;; == test enums.zig
 (const expect (.. (@import "std") -testing -expect))
@@ -565,15 +607,16 @@
 
   (try (expect (.eql mem u8 what_is_it "this is a number"))))
 
-;; @TagType can be used to access the integer tag type of an enum.
+;; @typeInfo can be used to access the integer tag type of an enum.
 (const Small
   (enum One
         Two
         Three
         Four))
 
-(test "@TagType"
-  (try (expect (= (@TagType Small) u2))))
+(test "std.meta.Tag"
+  (try (expect (= (-> (@typeInfo Small) .-Enum .-tag_type)
+                  u2))))
 
 ;; @typeInfo tells us the field count and the fields names:
 (test "@typeInfo"
@@ -674,8 +717,8 @@
                         (try (expect (= value 42))))
     ComplexTypeTag.NotOk unreachable))
 
-(test "@TagType"
-  (try (expect (= (@TagType ComplexType) ComplexTypeTag))))
+(test "get tag type"
+  (try (expect (= (std.meta.Tag ComplexType) ComplexTypeTag))))
 
 (test "coerce to enum"
   (const c1 ^ComplexType {:Ok 42})
@@ -1199,7 +1242,7 @@
 (const print std.debug.print)
 
 ;; defer will execute an expression at the end of the current scope.
-(defn ^usize deferExample []
+(defn ^!usize deferExample []
   (var ^usize a 1)
 
   (do
@@ -1211,7 +1254,7 @@
   (return a))
 
 (test "defer basics"
-  (try (expect (= (deferExample) 5))))
+  (try (expect (= (try (deferExample)) 5))))
 
 ;; If multiple defer statements are specified, they will be executed in
 ;; the reverse order they were run.
@@ -1284,9 +1327,9 @@
 (defn ^"callconv(.Naked) noreturn" _start []
   (abort))
 
-;; The inline specifier forces a function to be inlined at all call sites.
+;; The inline calling convention forces a function to be inlined at all call sites.
 ;; If the function cannot be inlined, it is a compile-time error.
-(defn ^:inline ^u32 shiftLeftOne [^u32 a]
+(defn ^"callconv(.Inline) u32" shiftLeftOne [^u32 a]
   (return (<< a 1)))
 
 ;; The pub specifier allows the function to be visible when importing.
@@ -1395,13 +1438,11 @@
 (const expect std.testing.expect)
 
 (test "async and await"
-  ;; Here we have an exception where we do not match an async
-  ;; with an await. The test block is not async and so cannot
-  ;; have a suspend point in it.
-  ;; This is well-defined behavior, and everything is OK here.
-  ;; Note however that there would be no way to collect the
-  ;; return value of amain, if it were something other than void.
-  (set! _ (async (amain))))
+  ;; The test block is not async and so cannot have a suspend
+  ;; point in it. By using the nosuspend keyword, we promise that
+  ;; the code in amain will finish executing without suspending
+  ;; back to the test block.
+  (nosuspend (amain)))
 
 (defn ^void amain []
   (var frame (async (func)))
@@ -1501,8 +1542,8 @@
   (const download_text (try (await download_frame)))
   (defer (.free allocator download_text))
 
-  (.print std.debug "download_text: {}\n" [download_text])
-  (.print std.debug "file_text: {}\n" [file_text]))
+  (.print std.debug "download_text: {s}\n" [download_text])
+  (.print std.debug "file_text: {s}\n" [file_text]))
 
 (var ^anyframe global_download_frame undefined)
 (defn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
@@ -1560,8 +1601,8 @@
   (const download_text (try (await download_frame)))
   (defer (.free allocator download_text))
 
-  (.print std.debug "download_text: {}\n" [download_text])
-  (.print std.debug "file_text: {}\n" [file_text]))
+  (.print std.debug "download_text: {s}\n" [download_text])
+  (.print std.debug "file_text: {s}\n" [file_text]))
 
 (defn ^"![]u8" fetchUrl [^*Allocator allocator ^"[]const u8" url]
   (const result (try (.dupe std.mem allocator u8 "this is the downloaded url contents")))
@@ -1584,6 +1625,33 @@
   (var ^usize zero 0)
   (var ptr (@intToPtr (zig* "*allowzero i32") zero))
   (try (expect (= (@ptrToInt ptr) 0))))
+
+;; == test Builtin @field
+
+(const std (@import "std"))
+
+(const Point (struct
+                ^u32 x
+                ^u32 y
+                (var ^:pub ^u32 z 1)))
+
+(test "field access by string"
+  (const expect std.testing.expect)
+  (var p ^Point {:x 0 :y 0})
+
+  (set! (@field p "x") 4)
+  (set! (@field p "y") (+ (@field p "x") 1))
+
+  (try (expect (= (@field p "x") 4)))
+  (try (expect (= (@field p "y") 5))))
+
+(test "decl access by string"
+  (const expect std.testing.expect)
+
+  (try (expect (= (@field Point "z") 1)))
+
+  (set! (@field Point "z") 2)
+  (try (expect (= (@field Point "z") 2))))
 
 ;; == test Builtin @reduce
 (const std (@import "std"))

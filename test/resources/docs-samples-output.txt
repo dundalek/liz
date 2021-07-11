@@ -122,10 +122,16 @@ Test [1/1] test "default struct initialization fields"...
 
 All 1 tests passed.
 
+;; == test packed struct
+
+Test [1/1] test "aligned struct fields"... 
+
+All 1 tests passed.
+
 ;; == run struct_name.zig
 
 variable: Foo
-anonymous: struct:5:52
+anonymous: struct:5:53
 function: List(i32)
 
 ;; == test struct_result.zig
@@ -140,13 +146,19 @@ Test [1/1] test "fully anonymous struct"...
 
 All 1 tests passed.
 
+;; == test tuple.zig
+
+Test [1/1] test "tuple"... 
+
+All 1 tests passed.
+
 ;; == test enums.zig
 
 Test [1/7] test "enum ordinal value"... 
 Test [2/7] test "set enum ordinal value"... 
 Test [3/7] test "enum method"... 
 Test [4/7] test "enum variant switch"... 
-Test [5/7] test "@TagType"... 
+Test [5/7] test "std.meta.Tag"... 
 Test [6/7] test "@typeInfo"... 
 Test [7/7] test "@tagName"... 
 
@@ -174,7 +186,7 @@ All 1 tests passed.
 ;; == test Tagged union
 
 Test [1/3] test "switch on tagged union"... 
-Test [2/3] test "@TagType"... 
+Test [2/3] test "get tag type"... 
 Test [3/3] test "coerce to enum"... 
 
 All 3 tests passed.
@@ -294,13 +306,13 @@ All 5 tests passed.
 ;; == test defer
 
 Test [1/3] test "defer basics"... 
-Test [2/3] test "defer unwinding"... 2 1 
-Test [3/3] test "errdefer unwinding"... start of function
+Test [2/3] test "defer unwinding"... 
+2 1 Test [3/3] test "errdefer unwinding"... 
+start of function
 end of function
 start of function
 encountered an error!
 end of function
-
 
 All 3 tests passed.
 
@@ -377,6 +389,13 @@ file_text: this is the file contents
 Test [1/1] test "allowzero"... 
 
 All 1 tests passed.
+
+;; == test Builtin @field
+
+Test [1/2] test "field access by string"... 
+Test [2/2] test "decl access by string"... 
+
+All 2 tests passed.
 
 ;; == test Builtin @reduce
 
