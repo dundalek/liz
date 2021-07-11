@@ -17,9 +17,9 @@
 (const expect (.. (@import "std") -testing -expect))
 
 (test "comments"
-  ;; (expect false)
+  ;; (try (expect false)
   (const x true) ; another comment
-  (expect x))
+  (try (expect x)))
 
 ;; == run values
 ;; Top-level declarations are order-independent:
@@ -45,14 +45,14 @@
 
     ;; optional
     (var ^"?[]const u8" optional_value nil)
-    (expect (= optional_value nil))
+    (try (expect (= optional_value nil)))
 
     (print "\noptional 1\ntype: {}\nvalue: {}\n"
       [(@typeName (@TypeOf optional_value))
        optional_value])
 
     (set! optional_value "hi")
-    (expect (not= optional_value null))
+    (try (expect (not= optional_value null)))
 
     (print "\noptional 2\ntype: {}\nvalue: {}\n"
       [(@typeName (@TypeOf optional_value))
@@ -77,22 +77,22 @@
 
 (test "string literals"
   (const bytes "hello")
-  (expect (= (@TypeOf bytes) (zig* "*const [5:0]u8")))
-  (expect (= bytes.len 5))
-  (expect (= (aget bytes 1) \e))
-  (expect (= (aget bytes 5) 0))
-  (expect (= \e \u0065));
-  (expect (= 0x1f4a9 128169))
-  ; (expect (= \💯 128175));
-  (expect (.eql mem u8 "hello" "h\u0065llo")))
+  (try (expect (= (@TypeOf bytes) (zig* "*const [5:0]u8"))))
+  (try (expect (= bytes.len 5)))
+  (try (expect (= (aget bytes 1) \e)))
+  (try (expect (= (aget bytes 5) 0)))
+  (try (expect (= \e \u0065)));
+  (try (expect (= 0x1f4a9 128169)))
+  ; (try (expect (= \💯 128175));
+  (try (expect (.eql mem u8 "hello" "h\u0065llo"))))
 
 ;; == test namespaced_global.zig
 (const std (@import "std"))
 (const expect std.testing.expect)
 
 (test "namespaced global variable"
-  (expect (= (foo) 1235))
-  (expect (= (foo) 1236)))
+  (try (expect (= (foo) 1235)))
+  (try (expect (= (foo) 1236))))
 
 (defn ^i32 foo []
   (const S (struct
@@ -114,9 +114,9 @@
   (.wait thread2))
 
 (defn ^void testTls [^void context]
-  (expect (= x 1234))
+  (try (expect (= x 1234)))
   (+= x 1)
-  (expect (= x 1235)))
+  (try (expect (= x 1235))))
 
 ;; == test comptime variables
 (const std (@import "std"))
@@ -129,8 +129,8 @@
   (+= x 1)
   (+= y 1)
 
-  (expect (= x 2))
-  (expect (= y 2))
+  (try (expect (= x 2)))
+  (try (expect (= y 2)))
 
   (when (not= y 2)
     ;; This compile error never triggers because y is a comptime variable,)
@@ -146,19 +146,19 @@
 
 ;; get the size of an array
 (comptime
-  (expect (= message.len 5)))
+  (try (expect (= message.len 5))))
 
 ;; A string literal is a pointer to an array literal
 (const same_message "hello")
 
 (comptime
-  (expect (.eql mem u8 (& message) same_message)))
+  (try (expect (.eql mem u8 (& message) same_message))))
 
 (test "iterate over an array"
   (var ^usize sum 0)
   (for [byte message]
     (+= sum byte))
-  (expect (= sum (+ \h \e (* \l 2) \o))))
+  (try (expect (= sum (+ \h \e (* \l 2) \o)))))
 
 ;; modifiable array
 (var ^"[100]i32" some_integers undefined)
@@ -166,8 +166,8 @@
 (test "modify an array"
   (for [[*item, i] some_integers]
       (set! item.* (@intCast i32 i)))
-  (expect (= (aget some_integers 10) 10))
-  (expect (= (aget some_integers 99) 99)))
+  (try (expect (= (aget some_integers 10) 10)))
+  (try (expect (= (aget some_integers 99) 99))))
 
 ;; array concatenation works if the values are known
 ;; at compile time
@@ -175,25 +175,25 @@
 (const part_two ^"[_]i32" [5, 6, 7, 8])
 (const all_of_it (++ part_one part_two))
 (comptime
-  (expect (.eql mem i32 (& all_of_it) (& ^"[_]i32" [1, 2, 3, 4, 5, 6, 7, 8]))))
+  (try (expect (.eql mem i32 (& all_of_it) (& ^"[_]i32" [1, 2, 3, 4, 5, 6, 7, 8])))))
 
 ;; remember that string literals are arrays
 (const hello "hello")
 (const world "world")
 (const hello_world (++ hello " " world))
 (comptime
-  (expect (.eql mem u8 hello_world "hello world")))
+  (try (expect (.eql mem u8 hello_world "hello world"))))
 
 ;; ** does repeating patterns
 (const pattern (** "ab" 3))
 (comptime
-  (expect (.eql mem u8 pattern "ababab")))
+  (try (expect (.eql mem u8 pattern "ababab"))))
 
 ;; initialize an array to zero
 (const all_zero (** ^"[_]u16" [0] 10))
 (comptime
-  (expect (= all_zero.len 10))
-  (expect (= (aget all_zero 5) 0)))
+  (try (expect (= all_zero.len 10)))
+  (try (expect (= (aget all_zero 5) 0))))
 
 ;; use compile-time code to initialize an array
 (var fancy_array
@@ -210,8 +210,8 @@
     ^i32 y))
 
 (test "compile-time array initialization"
-  (expect (= (.-x (aget fancy_array 4)) 4))
-  (expect (= (.-y (aget fancy_array 4)) 8)))
+  (try (expect (= (.-x (aget fancy_array 4)) 4)))
+  (try (expect (= (.-y (aget fancy_array 4)) 8))))
 
 ;; call a function to initialize an array
 (var more_points (-> ^"[_]Point" [(makePoint 3)]
@@ -221,9 +221,9 @@
                   :y (* x 2)}))
 
 (test "array initialization with function calls"
-  (expect (= (.-x (aget more_points 4)) 3))
-  (expect (= (.-y (aget more_points 4)) 6))
-  (expect (= more_points.len 10)))
+  (try (expect (= (.-x (aget more_points 4)) 3)))
+  (try (expect (= (.-y (aget more_points 4)) 6)))
+  (try (expect (= more_points.len 10))))
 
 ;; == test infer_list_literal.zig
 (const std (@import "std"))
@@ -233,11 +233,11 @@
   (dump [(@as u32 1234), (@as f64 12.34), true, "hi"]))
 
 (defn ^void dump [^anytype args]
-  (expect (= (.-0 args) 1234))
-  (expect (= (.-1 args) 12.34))
-  (expect (.-2 args))
-  (expect (= (aget (.-3 args) 0) \h))
-  (expect (= (aget (.-3 args) 1) \i)))
+  (try (expect (= (.-0 args) 1234)))
+  (try (expect (= (.-1 args) 12.34)))
+  (try (expect (.-2 args)))
+  (try (expect (= (aget (.-3 args) 0) \h)))
+  (try (expect (= (aget (.-3 args) 1) \i))))
 
 ;; == test multidimensional.zig
 (const std (@import "std"))
@@ -250,20 +250,20 @@
 
 (test "multidimensional arrays"
   ;; Access the 2D array by indexing the outer array, and then the inner array.
-  (expect (= (aget mat4x4 1 1) 1.0))
+  (try (expect (= (aget mat4x4 1 1) 1.0)))
 
   ;; Here we iterate with for loops.
   (for [[row, row_index] mat4x4]
     (for [[cell, column_index] row]
       (when (= row_index column_index)
-        (expect (= cell 1.0))))))
+        (try (expect (= cell 1.0)))))))
 
 ;; == test volatile
 (const expect (.. (@import "std") -testing -expect))
 
 (test "volatile"
   (const mmio_ptr (@intToPtr (zig* "*volatile u8") 0x12345678))
-  (expect (= (@TypeOf mmio_ptr) (zig* "*volatile u8"))))
+  (try (expect (= (@TypeOf mmio_ptr) (zig* "*volatile u8")))))
 
 ;; == test pointer casting
 (const std (@import "std"))
@@ -272,20 +272,20 @@
 (test "pointer casting"
   (const ^{:align "@alignOf(u32)"} bytes ^"[_]u8" [0x12, 0x12, 0x12, 0x12])
   (const u32_ptr (@ptrCast (zig* "*const u32") (& bytes)))
-  (expect (= u32_ptr.* 0x12121212))
+  (try (expect (= u32_ptr.* 0x12121212)))
 
   ;; Even this example is contrived - there are better ways to do the above than
   ;; pointer casting. For example, using a slice narrowing cast:
   (const u32_value (-> (.bytesAsSlice std.mem u32 (slice bytes 0))
                        (aget 0)))
-  (expect (= u32_value 0x12121212))
+  (try (expect (= u32_value 0x12121212)))
 
   ;; And even another way, the most straightforward way to do it:
-  (expect (= (@bitCast u32 bytes) 0x12121212)))
+  (try (expect (= (@bitCast u32 bytes) 0x12121212))))
 
 (test "pointer child type"
   ;; pointer types have a `child` field which tells you the type they point to.
-  (expect (= (.. (@typeInfo *u32) -Pointer -child) u32)))
+  (try (expect (= (.. (@typeInfo *u32) -Pointer -child) u32))))
 
 ;; == test variable alignment
 (const std (@import "std"))
@@ -294,10 +294,10 @@
 (test "variable alignment"
   (var ^i32 x 1234)
   (const align_of_i32 (@alignOf (@TypeOf x)))
-  (expect (= (@TypeOf &x) *i32))
-  (expect (= *i32 (zig* "*align(align_of_i32) i32")))
+  (try (expect (= (@TypeOf &x) *i32)))
+  (try (expect (= *i32 (zig* "*align(align_of_i32) i32"))))
   (when (= std.Target.current.cpu.arch .x86_64)
-    (expect (= (.. (@typeInfo *i32) -Pointer -alignment) 4))))
+    (try (expect (= (.. (@typeInfo *i32) -Pointer -alignment) 4)))))
 
 ;; == test variable and function alignment
 (const expect (.. (@import "std") -testing -expect))
@@ -305,11 +305,11 @@
 (var ^"u8 align(4)" foo 100)
 
 (test "global variable alignment"
-  (expect (= (-> (@TypeOf &foo) (@typeInfo) .-Pointer .-alignment) 4))
-  (expect (= (@TypeOf &foo) (zig* "*align(4) u8")))
+  (try (expect (= (-> (@TypeOf &foo) (@typeInfo) .-Pointer .-alignment) 4)))
+  (try (expect (= (@TypeOf &foo) (zig* "*align(4) u8"))))
   (const ^"*[1]u8" as_pointer_to_array &foo)
   (const ^"[]u8" as_slice as_pointer_to_array)
-  (expect (= (@TypeOf as_slice) (zig* "[]align(4) u8"))))
+  (try (expect (= (@TypeOf as_slice) (zig* "[]align(4) u8")))))
 
 
 (defn- ^"align(@sizeOf(usize) * 2) i32" derp [] (return 1234))
@@ -317,9 +317,9 @@
 (defn- ^"align(4) void" noop4 [] (do))
 
 (test "function alignment"
-  (expect (= (derp) 1234))
-  (expect (= (@TypeOf noop1) (zig* "fn() align(1) void")))
-  (expect (= (@TypeOf noop4) (zig* "fn() align(4) void")))
+  (try (expect (= (derp) 1234)))
+  (try (expect (= (@TypeOf noop1) (zig* "fn() align(1) void"))))
+  (try (expect (= (@TypeOf noop4) (zig* "fn() align(4) void"))))
   (noop1)
   (noop4))
 
@@ -365,12 +365,12 @@
 (test "dot product"
     (const v1 (Vec3.init 1.0, 0.0, 0.0))
     (const v2 (Vec3.init 0.0, 1.0, 0.0))
-    (expect (= (.dot v1 v2) 0.0))
+    (try (expect (= (.dot v1 v2) 0.0)))
 
     ;; Other than being available to call with dot syntax, struct methods are
     ;; not special. You can reference them as any other declaration inside
     ;; the struct:
-    (expect (= (Vec3.dot v1 v2) 0.0)))
+    (try (expect (= (Vec3.dot v1 v2) 0.0))))
 
 ;; Structs can have global declarations.
 ;; Structs can have 0 fields.
@@ -379,8 +379,8 @@
     (const ^:pub PI 3.14)))
 
 (test "struct namespaced variable"
-    (expect (= Empty.PI 3.14))
-    (expect (= (@sizeOf Empty) 0))
+    (try (expect (= Empty.PI 3.14)))
+    (try (expect (= (@sizeOf Empty) 0)))
 
     ;; you can still instantiate an empty struct
     (const does_nothing ^Empty {}))
@@ -396,7 +396,7 @@
                       :y 0.5678})
 
   (setYBasedOnX (& point.x) 0.9)
-  (expect (= point.y 0.9)))
+  (try (expect (= point.y 0.9))))
 
 ;; You can return a struct from a function. This is how we do generics
 ;; in Zig:
@@ -415,19 +415,19 @@
 (test "linked list"
   ;; Functions called at compile-time are memoized. This means you can
   ;; do this:
-  (expect (= (LinkedList i32) (LinkedList i32)))
+  (try (expect (= (LinkedList i32) (LinkedList i32))))
 
   (var list ^"LinkedList(i32)"
     {:first nil
      :last nil
      :len 0})
 
-  (expect (= list.len 0))
+  (try (expect (= list.len 0)))
 
   ;; Since types are first class values you can instantiate the type
   ;; by assigning it to a variable:
   (const ListOfInts (LinkedList i32))
-  (expect (= ListOfInts (LinkedList i32)))
+  (try (expect (= ListOfInts (LinkedList i32))))
 
   (var node ^ListOfInts.Node
     {:prev nil
@@ -439,7 +439,7 @@
      :last (& node)
      :len 1})
 
-  (expect (= list2.first.?.data 1234)))
+  (try (expect (= list2.first.?.data 1234))))
 
 ;; == test Default Field Values
 (const Foo
@@ -476,8 +476,8 @@
   (var ^Point pt {:x 13
                   :y 67})
 
-  (expect (= pt.x 13))
-  (expect (= pt.y 67)))
+  (try (expect (= pt.x 13)))
+  (try (expect (= pt.y 67))))
 
 ;; == test struct_anon.zig
 (const std (@import "std"))
@@ -490,11 +490,11 @@
          :s "hi"}))
 
 (defn- ^void dump [^anytype args]
-  (expect (= args.int 1234))
-  (expect (= args.float 12.34))
-  (expect args.b)
-  (expect (= (aget args.s 0) \h))
-  (expect (= (aget args.s 1) \i)))
+  (try (expect (= args.int 1234)))
+  (try (expect (= args.float 12.34)))
+  (try (expect args.b))
+  (try (expect (= (aget args.s 0) \h)))
+  (try (expect (= (aget args.s 1) \i))))
 
 ;; == test enums.zig
 (const expect (.. (@import "std") -testing -expect))
@@ -518,9 +518,9 @@
 ;; Now you can cast between u2 and Value.
 ;; The ordinal value starts from 0, counting up for each member.
 (test "enum ordinal value"
-    (expect (= (@enumToInt Value.Zero) 0))
-    (expect (= (@enumToInt Value.One) 1))
-    (expect (= (@enumToInt Value.Two) 2)))
+    (try (expect (= (@enumToInt Value.Zero) 0)))
+    (try (expect (= (@enumToInt Value.One) 1)))
+    (try (expect (= (@enumToInt Value.Two) 2))))
 
 ;; You can override the ordinal value for an enum.
 (const Value2 ^u32
@@ -529,9 +529,9 @@
         (set! Million 1000000)))
 
 (test "set enum ordinal value"
-  (expect (= (@enumToInt Value2.Hundred) 100))
-  (expect (= (@enumToInt Value2.Thousand) 1000))
-  (expect (= (@enumToInt Value2.Million) 1000000)))
+  (try (expect (= (@enumToInt Value2.Hundred) 100)))
+  (try (expect (= (@enumToInt Value2.Thousand) 1000)))
+  (try (expect (= (@enumToInt Value2.Million) 1000000))))
 
 ;; Enums can have methods, the same as structs and unions.
 ;; Enum methods are not special, they are only namespaced
@@ -547,7 +547,7 @@
 
 (test "enum method"
   (const p Suit.Spades)
-  (expect (not (.isClubs p))))
+  (try (expect (not (.isClubs p)))))
 
 ;; An enum variant of different types can be switched upon.
 (const Foo
@@ -563,7 +563,7 @@
       Foo.Number "this is a number"
       Foo.None "this is a none"))
 
-  (expect (.eql mem u8 what_is_it "this is a number")))
+  (try (expect (.eql mem u8 what_is_it "this is a number"))))
 
 ;; @TagType can be used to access the integer tag type of an enum.
 (const Small
@@ -573,18 +573,18 @@
         Four))
 
 (test "@TagType"
-  (expect (= (@TagType Small) u2)))
+  (try (expect (= (@TagType Small) u2))))
 
 ;; @typeInfo tells us the field count and the fields names:
 (test "@typeInfo"
-  (expect (= (.-Enum.fields.len (@typeInfo Small)) 4))
-  (expect (.eql mem u8
-                (-> (@typeInfo Small) .-Enum .-fields (aget 1) .-name)
-                "Two")))
+  (try (expect (= (.-Enum.fields.len (@typeInfo Small)) 4)))
+  (try (expect (.eql mem u8
+                     (-> (@typeInfo Small) .-Enum .-fields (aget 1) .-name)
+                     "Two"))))
 
 ;; @tagName gives a []const u8 representation of an enum value:
 (test "@tagName"
-  (expect (.eql mem u8 (@tagName Small.Three) "Three")))
+  (try (expect (.eql mem u8 (@tagName Small.Three) "Three"))))
 
 ;; == test Enum Literals
 (const std (@import "std"))
@@ -598,7 +598,7 @@
 (test "enum literals"
   (const ^Color color1 .Auto)
   (const color2 Color.Auto)
-  (expect (= color1 color2)))
+  (try (expect (= color1 color2))))
 
 (test "switch using enum literals"
   (const color Color.On)
@@ -608,7 +608,7 @@
       .On true
       .Off false))
 
-  (expect result))
+  (try (expect result)))
 
 ;; == test Non-exhaustive enum
 (const std (@import "std"))
@@ -629,13 +629,13 @@
       [.Two .Three] false
       _ false))
 
-  (expect result)
+  (try (expect result))
   (const is_one
     (case number
       .One true
       false))
 
-  (expect is_one))
+  (try (expect is_one)))
 
 ;; == test union
 (const std (@import "std"))
@@ -648,9 +648,9 @@
 
 (test "simple union"
   (var payload ^Payload {:Int 1234})
-  (expect (= payload.Int 1234))
+  (try (expect (= payload.Int 1234)))
   (set! payload ^Payload {:Float 12.34})
-  (expect (= payload.Float 12.34)))
+  (try (expect (= payload.Float 12.34))))
 
 ;; == test Tagged union
 (const std (@import "std"))
@@ -667,22 +667,22 @@
 
 (test "switch on tagged union"
   (const c ^ComplexType {:Ok 42})
-  (expect (= (@as ComplexTypeTag c) ComplexTypeTag.Ok))
+  (try (expect (= (@as ComplexTypeTag c) ComplexTypeTag.Ok)))
 
   (case c
     ComplexTypeTag.Ok (bind value
-                        (expect (= value 42)))
+                        (try (expect (= value 42))))
     ComplexTypeTag.NotOk unreachable))
 
 (test "@TagType"
-  (expect (= (@TagType ComplexType) ComplexTypeTag)))
+  (try (expect (= (@TagType ComplexType) ComplexTypeTag))))
 
 (test "coerce to enum"
   (const c1 ^ComplexType {:Ok 42})
   (const c2 ComplexType.NotOk)
 
-  (expect (= c1 .Ok))
-  (expect (= c2 .NotOk)))
+  (try (expect (= c1 .Ok)))
+  (try (expect (= c2 .NotOk))))
 
 ;; == test Union method
 (const std (@import "std"))
@@ -706,8 +706,8 @@
   (var v1 ^Variant {:Int 1})
   (var v2 ^Variant {:Bool false})
 
-  (expect (.truthy v1))
-  (expect (not (.truthy v2))))
+  (try (expect (.truthy v1)))
+  (try (expect (not (.truthy v2)))))
 
 ;; == test block separate scopes
 (test "separate scopes"
@@ -757,7 +757,7 @@
       ;; is handled.
       9))
 
-  (expect (= b 1)))
+  (try (expect (= b 1))))
 
 ;; Switch expressions can be used outside a function:
 (const os_msg
@@ -808,8 +808,8 @@
       ;; No else is required if the types cases was exhaustively handled
       Item.D 8))
 
-  (expect (= b 6))
-  (expect (= a.C.x 2)))
+  (try (expect (= b 6)))
+  (try (expect (= a.C.x 2))))
 
 ;; == test while basic
 (const expect (.. (@import "std") -testing -expect))
@@ -818,7 +818,7 @@
   (var ^usize i 0)
   (while (< i 10)
     (+= i 1))
-  (expect (= i 10)))
+  (try (expect (= i 10))))
 
 ;; == test while break
 (const expect (.. (@import "std") -testing -expect))
@@ -829,7 +829,7 @@
     (if (= i 10)
       (break))
     (+= i 1))
-  (expect (= i 10)))
+  (try (expect (= i 10))))
 
 ;; == test while continue
 (const expect (.. (@import "std") -testing -expect))
@@ -841,7 +841,7 @@
     (when (< i 10)
       (continue))
     (break))
-  (expect (= i 10)))
+  (try (expect (= i 10))))
 
 ;; == test while continue expression
 (const expect (.. (@import "std") -testing -expect))
@@ -849,7 +849,7 @@
 (test "while loop continue expression"
   (var ^usize i 0)
   (while-step (< i 10) (+= i 1))
-  (expect (= i 10)))
+  (try (expect (= i 10))))
 
 (test "while loop continue expression, more complicated"
   (var ^usize i 1)
@@ -857,14 +857,14 @@
   (while-step (< (* i j) 2000)
               (do (*= i 2) (*= j 3))
     (const my_ij (* i j))
-    (expect (< my_ij 2000))))
+    (try (expect (< my_ij 2000)))))
 
 ;; == test while else
 (const expect (.. (@import "std") -testing -expect))
 
 (test "while else"
-  (expect (rangeHasNumber 0 10 5))
-  (expect (not (rangeHasNumber 0 10 15))))
+  (try (expect (rangeHasNumber 0 10 5)))
+  (try (expect (not (rangeHasNumber 0 10 15)))))
 
 (defn ^bool rangeHasNumber [^usize begin ^usize end ^usize number]
   (var i begin)
@@ -899,7 +899,7 @@
   (while (eventuallyNullSequence)
     (bind value
       (+= sum1 value)))
-  (expect (= sum1 3))
+  (try (expect (= sum1 3)))
 
   (var ^u32 sum2 0)
   (set! numbers_left 3)
@@ -907,7 +907,7 @@
         (bind value
           (+= sum2 value)))
       (else
-       (expect (= sum2 3)))))
+       (try (expect (= sum2 3))))))
 
 (var ^u32 numbers_left undefined)
 (defn ^?u32 eventuallyNullSequence []
@@ -928,7 +928,7 @@
             (+= sum1 value)))
         (else
          (bind err
-           (expect (= err error.ReachedZero))))))
+           (try (expect (= err error.ReachedZero)))))))
 
 (var ^u32 numbers_left undefined)
 (defn ^anyerror!u32 eventuallyErrorSequence []
@@ -952,7 +952,7 @@
                  2 bool
                  unreachable))
       (+= sum (typeNameLength T))))
-  (expect (= sum 9)))
+  (try (expect (= sum 9))))
 
 (defn ^usize typeNameLength [^:comptime ^type T]
   (return (.-len (@typeName T))))
@@ -969,21 +969,21 @@
     (when (= value 0)
       (continue))
     (+= sum value))
-  (expect (= sum 16))
+  (try (expect (= sum 16)))
 
   ;; To iterate over a portion of a slice reslice.
   (for [value (slice items 0 1)]
     (+= sum value))
-  (expect (= sum 20))
+  (try (expect (= sum 20)))
 
   ;; To access the index of iteration specify a second capture value.
   ;; This is zero-indexed.
   (var ^i32 sum2 0)
   (for [[value i] items]
-    (expect (= (@TypeOf i) usize))
+    (try (expect (= (@TypeOf i) usize)))
     (+= sum2 (@intCast i32 i)))
 
-  (expect (= sum2 10)))
+  (try (expect (= sum2 10))))
 
 (test "for reference"
   (var items ^"[_]i32" [3 4 2])
@@ -993,9 +993,9 @@
   (for [*value items]
     (+= value.* 1))
 
-  (expect (= (aget items 0) 4))
-  (expect (= (aget items 1) 5))
-  (expect (= (aget items 2) 3)))
+  (try (expect (= (aget items 0) 4)))
+  (try (expect (= (aget items 1) 5)))
+  (try (expect (= (aget items 2) 3))))
 
 (test "for else"
   ;; For allows an else attached to it the same as a while loop.
@@ -1009,9 +1009,9 @@
           (when (not= value nil)
             (+= sum value.?)))
         (else (block :blk
-                (expect (= sum 12))
+                (try (expect (= sum 12)))
                 (break :blk sum)))))
-  (expect (= result 12)))
+  (try (expect (= result 12))))
 
 ;; == test Labeled for
 (const std (@import "std"))
@@ -1024,7 +1024,7 @@
       (for [_ ^"[_]i32" [1 2 3 4 5]]
         (+= count 1)
         (break :outer))))
-  (expect (= count 1)))
+  (try (expect (= count 1))))
 
 
 (test "nested continue"
@@ -1034,7 +1034,7 @@
       (for [_ ^"[_]i32" [1 2 3 4 5]]
         (+= count 1)
         (continue :outer))))
-  (expect (= count 8)))
+  (try (expect (= count 8))))
 
 ;; == test Inline for
 (const expect (.. (@import "std") -testing -expect))
@@ -1050,7 +1050,7 @@
                  6 bool
                  unreachable))
       (+= sum (typeNameLength T))))
-  (expect (= sum 9)))
+  (try (expect (= sum 9))))
 
 (defn ^usize typeNameLength [^:comptime ^type T]
   (return (.-len (@typeName T))))
@@ -1069,14 +1069,14 @@
   (const ^u32 a 5)
   (const ^u32 b 4)
   (const result (if (not= a b) 47 3089))
-  (expect (= result 47)))
+  (try (expect (= result 47))))
 
 (test "if boolean"
   ;; If expressions test boolean conditions.
   (const ^u32 a 5)
   (const ^u32 b 4)
   (cond
-    (not= a b) (expect true)
+    (not= a b) (try (expect true))
     (= a 9) (unreachable)
     :else (unreachable)))
 
@@ -1086,22 +1086,22 @@
   (const ^?u32 a 0)
   (if a
     (bind value
-      (expect (= value 0)))
+      (try (expect (= value 0))))
     (unreachable))
 
   (const ^?u32 b nil)
   (if b
     (bind value (unreachable))
-    (expect true))
+    (try (expect true)))
 
   ;; The else is not required.
   (if a
     (bind value
-      (expect (= value 0))))
+      (try (expect (= value 0)))))
 
   ;; To test against null only use the binary equality operator.
   (if (= b nil)
-    (expect true))
+    (try (expect true)))
 
   ;; Access the value by reference using a pointer capture.
   (var ^?u32 c 3)
@@ -1111,7 +1111,7 @@
 
   (if c
     (bind value
-      (expect (= value 2)))
+      (try (expect (= value 2))))
     (unreachable)))
 
 (test "if error union"
@@ -1121,7 +1121,7 @@
   (const ^anyerror!u32 a 0)
   (if a
     (bind value
-      (expect (= value 0)))
+      (try (expect (= value 0))))
     (bind err
       (unreachable)))
 
@@ -1129,19 +1129,19 @@
   (if b
     (bind value (unreachable))
     (bind err
-      (expect (= err error.BadValue))))
+      (try (expect (= err error.BadValue)))))
 
   ;; The else and |err| capture is strictly required.
   (if a
     (bind value
-      (expect (= value 0)))
+      (try (expect (= value 0))))
     (bind _))
 
   ;; To check only the error value use an empty block expression.
   (if b
     (bind _)
     (bind err
-      (expect (= err error.BadValue))))
+      (try (expect (= err error.BadValue)))))
 
   ;; Access the value by reference using a pointer capture.
   (var ^anyerror!u32 c 3)
@@ -1152,7 +1152,7 @@
 
   (if c
     (bind value
-      (expect (= value 9)))
+      (try (expect (= value 9))))
     (bind err (unreachable))))
 
 (test "if error union with optional"
@@ -1162,20 +1162,20 @@
   (const ^anyerror!?u32 a 0)
   (if a
     (bind optional_value
-      (expect (= optional_value.? 0)))
+      (try (expect (= optional_value.? 0))))
     (bind err (unreachable)))
 
   (const ^anyerror!?u32 b nil)
   (if b
     (bind optional_value
-      (expect (= optional_value nil)))
+      (try (expect (= optional_value nil))))
     (bind err (unreachable)))
 
   (const ^anyerror!?u32 c error.BadValue)
   (if c
     (bind optional_value (unreachable))
     (bind err
-      (expect (= err error.BadValue))))
+      (try (expect (= err error.BadValue)))))
 
   ;; Access the value by reference by using a pointer capture each time.
   (var ^anyerror!?u32 d 3)
@@ -1190,7 +1190,7 @@
 
   (if d
     (bind optional_value
-      (expect (= optional_value.? 9)))
+      (try (expect (= optional_value.? 9))))
     (bind err (unreachable))))
 
 ;; == test defer
@@ -1205,13 +1205,13 @@
   (do
     (defer (set! a 2))
     (set! a 1))
-  (expect (= a 2))
+  (try (expect (= a 2)))
 
   (set! a 5)
   (return a))
 
 (test "defer basics"
-  (expect (= (deferExample) 5)))
+  (try (expect (= (deferExample) 5))))
 
 ;; If multiple defer statements are specified, they will be executed in
 ;; the reverse order they were run.
@@ -1299,8 +1299,8 @@
   (return (fn_call op1 op2)))
 
 (test "function"
-  (expect (= (do_op add 5 6) 11))
-  (expect (= (do_op sub2 5 6) -1)))
+  (try (expect (= (do_op add 5 6) 11)))
+  (try (expect (= (do_op sub2 5 6) -1))))
 
 ;; == test Function Parameter Type Inference
 (const expect (.. (@import "std") -testing -expect))
@@ -1309,11 +1309,11 @@
   (return (+ x 42)))
 
 (test "fn type inference"
-  (expect (= (addFortyTwo 1) 43))
-  (expect (= (@TypeOf (addFortyTwo 1)) comptime_int))
+  (try (expect (= (addFortyTwo 1) 43)))
+  (try (expect (= (@TypeOf (addFortyTwo 1)) comptime_int)))
   (var ^i64 y 2)
-  (expect (= (addFortyTwo y) 44))
-  (expect (= (@TypeOf (addFortyTwo y)) i64)))
+  (try (expect (= (addFortyTwo y) 44)))
+  (try (expect (= (@TypeOf (addFortyTwo y)) i64))))
 
 ;; == test Errors
 (const std (@import "std"))
@@ -1328,7 +1328,7 @@
 
 (test "coerce subset to superset"
   (const err (foo AllocationError.OutOfMemory))
-  (.expect std.testing (= err FileOpenError.OutOfMemory)))
+  (try (.expect std.testing (= err FileOpenError.OutOfMemory))))
 
 (defn ^FileOpenError foo [^AllocationError err]
   (return err))
@@ -1337,7 +1337,7 @@
 (usingnamespace (@import "std"))
 
 (test "using std namespace"
-  (.expect testing true))
+  (try (.expect testing true)))
 
 ;; == test async suspend
 (const std (@import "std"))
@@ -1347,7 +1347,7 @@
 
 (test "suspend with no resume"
   (var frame (async (func)))
-  (expect (= x 2)))
+  (try (expect (= x 2))))
 
 (defn ^void func []
   (+= x 1)
@@ -1364,13 +1364,13 @@
 
 (test "async function suspend with block"
   (set! _ (async (testSuspendBlock)))
-  (expect (not result))
+  (try (expect (not result)))
   (resume the_frame)
-  (expect result))
+  (try (expect result)))
 
 (defn ^void testSuspendBlock []
   (suspend
-    (comptime (expect (= (@TypeOf (@frame)) (* (@Frame testSuspendBlock)))))
+    (comptime (try (expect (= (@TypeOf (@frame)) (* (@Frame testSuspendBlock))))))
     (set! the_frame (@frame)))
   (set! result true))
 
@@ -1381,7 +1381,7 @@
 (test "resume from suspend"
   (var ^i32 my_result 1)
   (set! _ (async (testResumeFromSuspend (& my_result))))
-  (.expect std.testing (= my_result 2)))
+  (try (.expect std.testing (= my_result 2))))
 
 (defn ^void testResumeFromSuspend [^*i32 my_result]
   (suspend
@@ -1405,7 +1405,7 @@
 
 (defn ^void amain []
   (var frame (async (func)))
-  (comptime (expect (= (@TypeOf frame) (@Frame func))))
+  (comptime (try (expect (= (@TypeOf frame) (@Frame func)))))
 
   (const ^anyframe->void ptr (& frame))
   (const ^anyframe any_ptr ptr)
@@ -1429,8 +1429,8 @@
   (seq \f)
   (resume the_frame)
   (seq \i)
-  (expect (= final_result 1234))
-  (expect (.eql std.mem u8 (& seq_points) "abcdefghi")))
+  (try (expect (= final_result 1234)))
+  (try (expect (.eql std.mem u8 (& seq_points) "abcdefghi"))))
 
 (defn ^void amain []
   (seq \b)
@@ -1583,7 +1583,7 @@
 (test "allowzero"
   (var ^usize zero 0)
   (var ptr (@intToPtr (zig* "*allowzero i32") zero))
-  (expect (= (@ptrToInt ptr) 0)))
+  (try (expect (= (@ptrToInt ptr) 0))))
 
 ;; == test Builtin @reduce
 (const std (@import "std"))
@@ -1593,7 +1593,7 @@
   (const ^"std.meta.Vector(4, i32)" value ^"[_]i32" [1 -1 1 -1])
   (const result (> value (@splat 4 (@as i32 0))))
   ;; result is { true, false, true, false}
-  (comptime (expect (= (@TypeOf result) (std.meta.Vector 4 bool))))
+  (comptime (try (expect (= (@TypeOf result) (std.meta.Vector 4 bool)))))
   (const is_all_true (@reduce .And result))
-  (comptime (expect (= (@TypeOf is_all_true) bool)))
-  (expect (= is_all_true false)))
+  (comptime (try (expect (= (@TypeOf is_all_true) bool))))
+  (try (expect (= is_all_true false))))
