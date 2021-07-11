@@ -8,7 +8,8 @@ Hello, world!
 
 ;; == test comments
 
-1/1 test "comments"... OK
+Test [1/1] test "comments"... 
+
 All 1 tests passed.
 
 ;; == run values
@@ -37,75 +38,88 @@ value: 1234
 
 ;; == test string literals
 
-1/1 test "string literals"... OK
+Test [1/1] test "string literals"... 
+
 All 1 tests passed.
 
 ;; == test namespaced_global.zig
 
-1/1 test "namespaced global variable"... OK
+Test [1/1] test "namespaced global variable"... 
+
 All 1 tests passed.
 
 ;; == test Thread Local Variables
 
-1/1 test "thread local storage"... OK
+Test [1/1] test "thread local storage"... 
+
 All 1 tests passed.
 
 ;; == test comptime variables
 
-1/1 test "comptime vars"... OK
+Test [1/1] test "comptime vars"... 
+
 All 1 tests passed.
 
 ;; == test Arrays
 
-1/4 test "iterate over an array"... OK
-2/4 test "modify an array"... OK
-3/4 test "compile-time array initialization"... OK
-4/4 test "array initialization with function calls"... OK
+Test [1/4] test "iterate over an array"... 
+Test [2/4] test "modify an array"... 
+Test [3/4] test "compile-time array initialization"... 
+Test [4/4] test "array initialization with function calls"... 
+
 All 4 tests passed.
 
 ;; == test infer_list_literal.zig
 
-1/1 test "fully anonymous list literal"... OK
+Test [1/1] test "fully anonymous list literal"... 
+
 All 1 tests passed.
 
 ;; == test multidimensional.zig
 
-1/1 test "multidimensional arrays"... OK
+Test [1/1] test "multidimensional arrays"... 
+
 All 1 tests passed.
 
 ;; == test volatile
 
-1/1 test "volatile"... OK
+Test [1/1] test "volatile"... 
+
 All 1 tests passed.
 
 ;; == test pointer casting
 
-1/2 test "pointer casting"... OK
-2/2 test "pointer child type"... OK
+Test [1/2] test "pointer casting"... 
+Test [2/2] test "pointer child type"... 
+
 All 2 tests passed.
 
 ;; == test variable alignment
 
-1/1 test "variable alignment"... OK
+Test [1/1] test "variable alignment"... 
+
 All 1 tests passed.
 
 ;; == test variable and function alignment
 
-1/2 test "global variable alignment"... OK
-2/2 test "function alignment"... OK
+Test [1/2] test "global variable alignment"... 
+Test [2/2] test "function alignment"... 
+
 All 2 tests passed.
 
 ;; == test structs.zig
 
-1/4 test "dot product"... OK
-2/4 test "struct namespaced variable"... OK
-3/4 test "field parent pointer"... OK
-4/4 test "linked list"... OK
+Test [1/4] test "dot product"... 
+Test [2/4] test "struct namespaced variable"... 
+Test [3/4] test "field parent pointer"... 
+Test [4/4] test "linked list"... 
+
 All 4 tests passed.
 
 ;; == test Default Field Values
 
-1/1 test "default struct initialization fields"... OK
+Test [1/1] test "default struct initialization fields"... 
+
 All 1 tests passed.
 
 ;; == run struct_name.zig
@@ -116,198 +130,232 @@ function: List(i32)
 
 ;; == test struct_result.zig
 
-1/1 test "anonymous struct literal"... OK
+Test [1/1] test "anonymous struct literal"... 
+
 All 1 tests passed.
 
 ;; == test struct_anon.zig
 
-1/1 test "fully anonymous struct"... OK
+Test [1/1] test "fully anonymous struct"... 
+
 All 1 tests passed.
 
 ;; == test enums.zig
 
-1/7 test "enum ordinal value"... OK
-2/7 test "set enum ordinal value"... OK
-3/7 test "enum method"... OK
-4/7 test "enum variant switch"... OK
-5/7 test "@TagType"... OK
-6/7 test "@typeInfo"... OK
-7/7 test "@tagName"... OK
+Test [1/7] test "enum ordinal value"... 
+Test [2/7] test "set enum ordinal value"... 
+Test [3/7] test "enum method"... 
+Test [4/7] test "enum variant switch"... 
+Test [5/7] test "@TagType"... 
+Test [6/7] test "@typeInfo"... 
+Test [7/7] test "@tagName"... 
+
 All 7 tests passed.
 
 ;; == test Enum Literals
 
-1/2 test "enum literals"... OK
-2/2 test "switch using enum literals"... OK
+Test [1/2] test "enum literals"... 
+Test [2/2] test "switch using enum literals"... 
+
 All 2 tests passed.
 
 ;; == test Non-exhaustive enum
 
-1/1 test "switch on non-exhaustive enum"... OK
+Test [1/1] test "switch on non-exhaustive enum"... 
+
 All 1 tests passed.
 
 ;; == test union
 
-1/1 test "simple union"... OK
+Test [1/1] test "simple union"... 
+
 All 1 tests passed.
 
 ;; == test Tagged union
 
-1/3 test "switch on tagged union"... OK
-2/3 test "@TagType"... OK
-3/3 test "coerce to enum"... OK
+Test [1/3] test "switch on tagged union"... 
+Test [2/3] test "@TagType"... 
+Test [3/3] test "coerce to enum"... 
+
 All 3 tests passed.
 
 ;; == test Union method
 
-1/1 test "union method"... OK
+Test [1/1] test "union method"... 
+
 All 1 tests passed.
 
 ;; == test block separate scopes
 
-1/1 test "separate scopes"... OK
+Test [1/1] test "separate scopes"... 
+
 All 1 tests passed.
 
 ;; == test switch
 
-1/2 test "switch simple"... OK
-2/2 test "switch inside function"... OK
+Test [1/2] test "switch simple"... 
+Test [2/2] test "switch inside function"... 
+
 All 2 tests passed.
 
 ;; == test switch tagged union
 
-1/1 test "switch on tagged union"... OK
+Test [1/1] test "switch on tagged union"... 
+
 All 1 tests passed.
 
 ;; == test while basic
 
-1/1 test "while basic"... OK
+Test [1/1] test "while basic"... 
+
 All 1 tests passed.
 
 ;; == test while break
 
-1/1 test "while break"... OK
+Test [1/1] test "while break"... 
+
 All 1 tests passed.
 
 ;; == test while continue
 
-1/1 test "while continue"... OK
+Test [1/1] test "while continue"... 
+
 All 1 tests passed.
 
 ;; == test while continue expression
 
-1/2 test "while loop continue expression"... OK
-2/2 test "while loop continue expression, more complicated"... OK
+Test [1/2] test "while loop continue expression"... 
+Test [2/2] test "while loop continue expression, more complicated"... 
+
 All 2 tests passed.
 
 ;; == test while else
 
-1/1 test "while else"... OK
+Test [1/1] test "while else"... 
+
 All 1 tests passed.
 
 ;; == test Labeled while
 
-1/2 test "nested break"... OK
-2/2 test "nested continue"... OK
+Test [1/2] test "nested break"... 
+Test [2/2] test "nested continue"... 
+
 All 2 tests passed.
 
 ;; == test while with Optionals
 
-1/1 test "while null capture"... OK
+Test [1/1] test "while null capture"... 
+
 All 1 tests passed.
 
 ;; == test while with Error Unions
 
-1/1 test "while error union capture"... OK
+Test [1/1] test "while error union capture"... 
+
 All 1 tests passed.
 
 ;; == test inline while
 
-1/1 test "inline while loop"... OK
+Test [1/1] test "inline while loop"... 
+
 All 1 tests passed.
 
 ;; == test for
 
-1/3 test "for basics"... OK
-2/3 test "for reference"... OK
-3/3 test "for else"... OK
+Test [1/3] test "for basics"... 
+Test [2/3] test "for reference"... 
+Test [3/3] test "for else"... 
+
 All 3 tests passed.
 
 ;; == test Labeled for
 
-1/2 test "nested break"... OK
-2/2 test "nested continue"... OK
+Test [1/2] test "nested break"... 
+Test [2/2] test "nested continue"... 
+
 All 2 tests passed.
 
 ;; == test Inline for
 
-1/1 test "inline for loop"... OK
+Test [1/1] test "inline for loop"... 
+
 All 1 tests passed.
 
 ;; == test if
 
-1/5 test "if expression"... OK
-2/5 test "if boolean"... OK
-3/5 test "if optional"... OK
-4/5 test "if error union"... OK
-5/5 test "if error union with optional"... OK
+Test [1/5] test "if expression"... 
+Test [2/5] test "if boolean"... 
+Test [3/5] test "if optional"... 
+Test [4/5] test "if error union"... 
+Test [5/5] test "if error union with optional"... 
+
 All 5 tests passed.
 
 ;; == test defer
 
-1/3 test "defer basics"... OK
-2/3 test "defer unwinding"... 2 1 OK
-3/3 test "errdefer unwinding"... start of function
+Test [1/3] test "defer basics"... 
+Test [2/3] test "defer unwinding"... 2 1 
+Test [3/3] test "errdefer unwinding"... start of function
 end of function
 start of function
 encountered an error!
 end of function
-OK
+
+
 All 3 tests passed.
 
 ;; == test functions
 
-1/1 test "function"... OK
+Test [1/1] test "function"... 
+
 All 1 tests passed.
 
 ;; == test Function Parameter Type Inference
 
-1/1 test "fn type inference"... OK
+Test [1/1] test "fn type inference"... 
+
 All 1 tests passed.
 
 ;; == test Errors
 
-1/1 test "coerce subset to superset"... OK
+Test [1/1] test "coerce subset to superset"... 
+
 All 1 tests passed.
 
 ;; == test usingnamespace
 
-1/1 test "using std namespace"... OK
+Test [1/1] test "using std namespace"... 
+
 All 1 tests passed.
 
 ;; == test async suspend
 
-1/1 test "suspend with no resume"... OK
+Test [1/1] test "suspend with no resume"... 
+
 All 1 tests passed.
 
 ;; == test async suspend resume
 
-1/1 test "async function suspend with block"... OK
+Test [1/1] test "async function suspend with block"... 
+
 All 1 tests passed.
 
 ;; == test async Resuming from Suspend Blocks
 
-1/1 test "resume from suspend"... OK
+Test [1/1] test "resume from suspend"... 
+
 All 1 tests passed.
 
 ;; == test async await
 
-1/1 test "async and await"... OK
+Test [1/1] test "async and await"... 
+
 All 1 tests passed.
 
 ;; == test async function await
 
-1/1 test "async function await"... OK
+Test [1/1] test "async function await"... 
+
 All 1 tests passed.
 
 ;; == run Async Function Example
@@ -326,10 +374,12 @@ file_text: this is the file contents
 
 ;; == test Pointers allowzero
 
-1/1 test "allowzero"... OK
+Test [1/1] test "allowzero"... 
+
 All 1 tests passed.
 
 ;; == test Builtin @reduce
 
-1/1 test "vector @reduce"... OK
+Test [1/1] test "vector @reduce"... 
+
 All 1 tests passed.
