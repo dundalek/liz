@@ -140,32 +140,3 @@ Run tests:
 ```sh
 clj -Mtest
 ```
-
-## TODOs
-
-- [ ] analyzer improvements
-  - [ ] override `catch` to not require exception type?
-  - [ ] clean up and move the custom logic from emitter to analyzer - perhaps as an analyzer pass
-  - [ ] specification of AST - spec or malli
-- [ ] write documentation - tutorial/reference
-- [ ] assembly notation
-
-### Nice to haves
-
-- [ ] preserve comments, perhaps read it with [rewrite-clj](https://github.com/xsc/rewrite-clj)
-- [ ] doc comments - in Zig with `///`
-- [ ] preserve line and column info, possibilities:
-  - emit Zig AST directly
-  - try to hack it and emit annotated tokens
-  - emit code as is but have a mapping to translate back locations reported by Zig CLI
-
-## Future explorations
-
-Trying to bring in more Clojure semantics.
-
-- [ ] Try to support macros in Liz (defined in Clojure, interpreted via SCI)
-- [ ] Could we implement destructuring?
-- [ ] Would having implicit block return work?
-- [ ] Try to write library implementing Clojure-like Sequences protocol
-- [ ] Explore possibility of implementation of Protocols
-- [ ] If we have sequences protocol we could write immutable data structures library
