@@ -526,3 +526,9 @@
   (dotimes [^isize i 4]
     (+= a i))
   (try (expect (= 6 a))))
+
+;; == translate Nameless Tests
+;; https://ziglang.org/download/0.8.0/release-notes.html#Nameless-Tests
+
+(test
+  (set! _ (@import "b.zig")))

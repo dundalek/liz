@@ -1,6 +1,5 @@
 (ns liz.impl.emitter
-  (:require [clojure.pprint :refer [pprint]]
-            [liz.impl.lang :refer [binary-ops]]
+  (:require [liz.impl.lang :refer [binary-ops]]
             [clojure.tools.analyzer.utils :as ana.utils]))
 
 (defn format-assert-arg-message [form args]
@@ -83,7 +82,6 @@
      (emit-block forms))))
 
 (defn emit-for [args]
-  ;(pprint args)
   (emits "for (")
   (let [[binding target] (:items (unwrap-meta (first args)))
         binding (unwrap-meta binding)]
@@ -396,11 +394,17 @@
     (emit-for args)
 
     (= (:form f) 'test)
-    (do
+    (let [{:keys [op type literal?]} (first args)
+          named-test? (and (= op :const)
+                           (= type :string)
+                           (true? literal?))]
       (emits "test ")
-      (-emit (first args))
-      (emits " ")
-      (emit-block (rest args)))
+      (if named-test?
+        (do
+          (-emit (first args))
+          (emits " ")
+          (emit-block (rest args)))
+        (emit-block args)))
 
     (#{'comptime} (:form f))
     (do

@@ -37,20 +37,23 @@
 
 (defn run-test-case [{:keys [name action content]} result]
   (testing name
-    (with-temp-file
-      (fn [out-file]
-        (->> (compile-string content)
-             (spit out-file))
-        (let [{:keys [exit out err]} (sh "zig" action out-file)]
-          (is (= (:name result) name))
-          (is (= 0 exit))
-          (is (= (str/trim (:content result))
-                 (str/trim (str out "\n" err))))
+    (is (= (:name result) name))
+    (if (= action "translate")
+      (is (= (str/trim (:content result))
+             (str/trim (compile-string content))))
+      (with-temp-file
+        (fn [out-file]
+          (->> (compile-string content)
+               (spit out-file))
+          (let [{:keys [exit out err]} (sh "zig" action out-file)]
+            (is (= 0 exit))
+            (is (= (str/trim (:content result))
+                   (str/trim (str out "\n" err))))
 
-          (comment
-            (println (str ";; == " action " " name))
-            (println out)
-            (println err)))))))
+            (comment
+              (println (str ";; == " action " " name))
+              (println out)
+              (println err))))))))
 
 ;(deftest compile-forms
 ;  (is (= "pub extern \"c\" fn printf(format: [*:0]const u8, ...) c_int;"

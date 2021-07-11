@@ -175,3 +175,9 @@ Test [2/3] test "dotimes with variable"...
 Test [3/3] test "dotimes with type hint"... 
 
 All 3 tests passed.
+
+;; == translate Nameless Tests
+
+test {
+    _ = @import("b.zig");
+}
