@@ -1,7 +1,8 @@
 name: build
 
 env:
-  GRAAL_VERSION: "20.1.0.java11"
+  GRAAL_VERSION: "21.1.0"
+  JAVA_VERSION: "java11"
   TOOLS_CLI_VERSION: "1.10.1.716" # or "latest"
 # on:
 #   push:
@@ -72,7 +73,7 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: /Users/runner/hostedtoolcache/GraalVM
-          key: ${{ runner.os }}-graal-${{ env.GRAAL_VERSION }}
+          key: ${{ runner.os }}-graal-${{ env.GRAAL_VERSION }}-${{ env.JAVA_VERSION }}
           restore-keys: |
             ${{ runner.os }}-graal-
 
@@ -101,9 +102,10 @@ jobs:
           path: .
 
       - name: Prepare GraalVM
-        uses: DeLaGuardo/setup-graalvm@3.0
+        uses: DeLaGuardo/setup-graalvm@4.0
         with:
-          graalvm-version: ${{ env.GRAAL_VERSION }}
+          graalvm: ${{ env.GRAAL_VERSION }}
+          java: ${{ env.JAVA_VERSION }}
 
       - name: Install native-image
         run: gu install native-image
@@ -136,7 +138,7 @@ jobs:
       - uses: actions/cache@v1
         with:
           path: /opt/hostedtoolcache/GraalVM
-          key: ${{ runner.os }}-graal-${{ env.GRAAL_VERSION }}
+          key: ${{ runner.os }}-graal-${{ env.GRAAL_VERSION }}-${{ env.JAVA_VERSION }}
           restore-keys: |
             ${{ runner.os }}-graal-
 
@@ -165,9 +167,10 @@ jobs:
           path: .
 
       - name: Prepare GraalVM
-        uses: DeLaGuardo/setup-graalvm@3.0
+        uses: DeLaGuardo/setup-graalvm@4.0
         with:
-          graalvm-version: ${{ env.GRAAL_VERSION }}
+          graalvm: ${{ env.GRAAL_VERSION }}
+          java: ${{ env.JAVA_VERSION }}
 
       - name: Install native-image
         run: gu install native-image
