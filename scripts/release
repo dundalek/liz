@@ -1,0 +1,24 @@
+#!/usr/bin/env bash
+
+echo "Make sure tests in CI pass"
+read
+
+echo "Update changelog"
+read
+
+echo "Update version in resources/LIZ_VERSION"
+read
+
+echo "git tag"
+read
+
+echo "Push master"
+read
+
+echo "Upload artifacts from actions to release page and add a link to changelog"
+read
+
+echo "Bump SNAPSHOT version in resources/LIZ_VERSION"
+read
+
+echo "All done, grab a beer to celebrate!"
