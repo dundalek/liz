@@ -1,6 +1,8 @@
 # Changelog
 
-## [master](https://github.com/dundalek/liz/compare/v0.1.1...master) (unreleased)
+## [master](https://github.com/dundalek/liz/compare/v0.2.0...master) (unreleased)
+
+## [0.2.0](https://github.com/dundalek/liz/compare/v0.1.1...v0.2.0) (2021-07-17)
 
 - Upgrade to Zig v0.8.0
 - Improve error messages
