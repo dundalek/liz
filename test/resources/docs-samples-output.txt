@@ -334,9 +334,15 @@ Test [1/1] test "coerce subset to superset"...
 
 All 1 tests passed.
 
-;; == test usingnamespace
+;; == test usingnamespace.zig
 
 Test [1/1] test "using std namespace"... 
+
+All 1 tests passed.
+
+;; == test usingnamespace_inside_struct.zig
+
+Test [1/1] test "using namespace inside struct"... 
 
 All 1 tests passed.
 

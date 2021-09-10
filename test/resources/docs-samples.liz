@@ -1376,11 +1376,21 @@
 (defn ^FileOpenError foo [^AllocationError err]
   (return err))
 
-;; == test usingnamespace
+;; usingnamespace
+;; == test usingnamespace.zig
 (usingnamespace (@import "std"))
 
 (test "using std namespace"
   (try (.expect testing true)))
+
+;; == test usingnamespace_inside_struct.zig
+
+(test "using namespace inside struct"
+    (const L (struct
+                (usingnamespace
+                  (struct
+                    (fn ^:pub ^void f [])))))
+    (.f L))
 
 ;; == test async suspend
 (const std (@import "std"))

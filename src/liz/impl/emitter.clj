@@ -528,7 +528,9 @@
                (= (:op (:ret body)) :const)
                (= (:type (:ret body)) :nil))
         (when top-level
-          (emits ";\n"))
+          (if extern
+            (emits ";\n")
+            (emits " {}\n")))
         (do
           (emits " ")
           (assert (= (:op body) :do))

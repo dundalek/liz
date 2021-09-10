@@ -123,7 +123,7 @@
       "defn- results in private declaration without pub modifier"))
 
 (deftest test-noalias
-  (is (= "pub fn readlink(noalias path: [*:0]const u8, noalias buf_ptr: [*]u8, buf_len: usize) usize;\n"
+  (is (= "pub fn readlink(noalias path: [*:0]const u8, noalias buf_ptr: [*]u8, buf_len: usize) usize {}\n"
          (compile-string (binding [*print-meta* true]
                            (pr-str '(defn ^usize readlink [^:noalias ^"[*:0]const u8" path ^:noalias ^"[*]u8" buf_ptr ^usize buf_len])))))
       "noalias parameter modifier"))
