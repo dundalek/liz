@@ -42,9 +42,21 @@ Test [1/1] test "string literals"...
 
 All 1 tests passed.
 
-;; == test namespaced_global.zig
+;; == test container_level_variables.zig
 
-Test [1/1] test "namespaced global variable"... 
+Test [1/1] test "container level variables"... 
+
+All 1 tests passed.
+
+;; == test namespaced_container_level_variable.zig
+
+Test [1/1] test "namespaced container level variable"... 
+
+All 1 tests passed.
+
+;; == test static_local_variable.zig
+
+Test [1/1] test "static local variable"... 
 
 All 1 tests passed.
 

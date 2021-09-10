@@ -87,11 +87,43 @@
   (try (expect (.eql mem u8 "hello" "h\u0065llo"))))
   ; (try (expect (= (aget "\xff" 0) 0xff))))
 
-;; == test namespaced_global.zig
+;; Container Level Variables
+;; == test container_level_variables.zig
+(var ^i32 y (add 10 x))
+(const ^i32 x (add 12 34))
+
+(test "container level variables"
+  (try (expect (= x 46)))
+  (try (expect (= y 56))))
+
+(defn ^i32 add [^i32 a ^i32 b]
+  (return (+ a b)))
+
 (const std (@import "std"))
 (const expect std.testing.expect)
 
-(test "namespaced global variable"
+;; == test namespaced_container_level_variable.zig
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "namespaced container level variable"
+  (try (expect (= (foo) 1235)))
+  (try (expect (= (foo) 1236))))
+
+(const S (struct
+          (var ^i32 x 1234)))
+
+(defn ^i32 foo []
+  (+= S.x 1)
+  (return S.x))
+
+;; Static Local Variables
+;; == test static_local_variable.zig
+
+(const std (@import "std"))
+(const expect std.testing.expect)
+
+(test "static local variable"
   (try (expect (= (foo) 1235)))
   (try (expect (= (foo) 1236))))
 
